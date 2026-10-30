@@ -1,0 +1,93 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
+  --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --color-gold: #e8e8ee;
+  --color-gold-bright: #f7f7f8;
+  --color-emerald: #34d399;
+}
+
+:root {
+  --bg: #f4efe6;
+  --bg-deep: #ebe4d6;
+  --text: #1a1712;
+  --muted: #6b6458;
+  --glass: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(40, 32, 20, 0.1);
+  --glass-shadow: 0 16px 48px rgba(50, 38, 20, 0.1);
+  --glow: rgba(196, 168, 120, 0.35);
+  --orb-gold: rgba(214, 186, 140, 0.55);
+  --orb-emerald: rgba(168, 186, 176, 0.4);
+  --orb-warm: rgba(232, 200, 160, 0.45);
+  color-scheme: light;
+}
+
+html.dark {
+  --bg: #000000;
+  --bg-deep: #050505;
+  --text: #f4f4f5;
+  --muted: #a1a1aa;
+  --glass: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --glow: rgba(255, 255, 255, 0.22);
+  --orb-gold: rgba(255, 255, 255, 0.16);
+  --orb-emerald: rgba(210, 210, 220, 0.1);
+  --orb-warm: rgba(255, 255, 255, 0.08);
+  --color-gold: #e8e8ee;
+  --color-gold-bright: #f7f7f8;
+  color-scheme: dark;
+}
+
+html:not(.dark) {
+  --color-gold: #8a6d3b;
+  --color-gold-bright: #6b542c;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+html[data-install-banner] body {
+  padding-bottom: 6.5rem;
+}
+
+button,
+a {
+  cursor: pointer;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--glow) 70%, transparent);
+  color: var(--text);
+}
+
+@utility glass {
+  background: var(--glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+@utility glass-strong {
+  background: color-mix(in srgb, var(--glass) 78%, white 12%);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), 0 0 40px var(--glow);
+}
