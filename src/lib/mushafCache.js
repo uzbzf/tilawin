@@ -1,4 +1,4 @@
-const DB_NAME = 'tilawin-mushaf'
+const DB_NAME = 'tilawin-mushaf-v2'
 const STORE = 'pages'
 const META = 'meta'
 const VERSION = 1

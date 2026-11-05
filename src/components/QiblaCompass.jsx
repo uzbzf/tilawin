@@ -1,11 +1,13 @@
 import { Compass, LocateFixed, Navigation } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useSound } from '../hooks/useSound'
 import { useLocale } from '../i18n/LocaleContext'
 
 const KAABA = { lat: 21.4225, lng: 39.8262 }
+const EMA_ALPHA = 0.15
+const DEADZONE = 2.5
 
 function toRad(deg) {
   return (deg * Math.PI) / 180
@@ -13,6 +15,10 @@ function toRad(deg) {
 
 function toDeg(rad) {
   return (rad * 180) / Math.PI
+}
+
+function shortestDelta(from, to) {
+  return ((to - from + 540) % 360) - 180
 }
 
 /** Great-circle initial bearing from A → B */
@@ -25,14 +31,13 @@ export function qiblaBearing(lat, lng) {
   return (toDeg(Math.atan2(y, x)) + 360) % 360
 }
 
-function normalizeHeading(alpha, absolute, webkitCompass) {
-  if (typeof webkitCompass === 'number' && !Number.isNaN(webkitCompass)) {
-    return webkitCompass
+function normalizeHeading(event) {
+  if (typeof event.webkitCompassHeading === 'number' && !Number.isNaN(event.webkitCompassHeading)) {
+    return event.webkitCompassHeading
   }
-  if (typeof alpha !== 'number' || Number.isNaN(alpha)) return null
-  // absolute: true → alpha is compass degrees from north
-  if (absolute) return (360 - alpha) % 360
-  return (360 - alpha) % 360
+  if (typeof event.alpha !== 'number' || Number.isNaN(event.alpha)) return null
+  // Compass degrees from north
+  return (360 - event.alpha) % 360
 }
 
 export function QiblaCompass() {
@@ -42,6 +47,8 @@ export function QiblaCompass() {
   const [heading, setHeading] = useState(null)
   const [perm, setPerm] = useState('unknown')
   const [error, setError] = useState('')
+  const smoothRef = useRef(null)
+  const absoluteOnly = useRef(false)
 
   const qibla = useMemo(() => {
     if (geo.lat == null || geo.lng == null) return null
@@ -54,20 +61,37 @@ export function QiblaCompass() {
   }, [qibla, heading])
 
   useEffect(() => {
-    const onOrient = (event) => {
-      const next = normalizeHeading(
-        event.alpha,
-        event.absolute,
-        event.webkitCompassHeading,
-      )
-      if (next != null) setHeading(next)
+    const applySample = (raw) => {
+      if (raw == null) return
+      const prev = smoothRef.current
+      if (prev == null) {
+        smoothRef.current = raw
+        setHeading(raw)
+        return
+      }
+      const delta = shortestDelta(prev, raw)
+      if (Math.abs(delta) < DEADZONE) return
+      const next = (prev + delta * EMA_ALPHA + 360) % 360
+      smoothRef.current = next
+      setHeading(next)
     }
 
-    window.addEventListener('deviceorientationabsolute', onOrient, true)
-    window.addEventListener('deviceorientation', onOrient, true)
+    const onAbsolute = (event) => {
+      absoluteOnly.current = true
+      applySample(normalizeHeading(event))
+    }
+
+    const onRelative = (event) => {
+      // Prefer absolute / webkit; skip relative noise when absolute is streaming
+      if (absoluteOnly.current && typeof event.webkitCompassHeading !== 'number') return
+      applySample(normalizeHeading(event))
+    }
+
+    window.addEventListener('deviceorientationabsolute', onAbsolute, true)
+    window.addEventListener('deviceorientation', onRelative, true)
     return () => {
-      window.removeEventListener('deviceorientationabsolute', onOrient, true)
-      window.removeEventListener('deviceorientation', onOrient, true)
+      window.removeEventListener('deviceorientationabsolute', onAbsolute, true)
+      window.removeEventListener('deviceorientation', onRelative, true)
     }
   }, [])
 
@@ -128,13 +152,15 @@ export function QiblaCompass() {
         <span className="absolute left-3 text-[10px] text-[var(--muted)]">W</span>
         <span className="absolute right-3 text-[10px] text-[var(--muted)]">E</span>
 
-        <motion.div
-          className="absolute flex h-full w-full items-start justify-center pt-6"
-          animate={{ rotate: needle }}
-          transition={{ type: 'spring', stiffness: 120, damping: 18 }}
+        <div
+          className="absolute flex h-full w-full items-start justify-center pt-6 will-change-transform"
+          style={{
+            transform: `rotate(${needle}deg)`,
+            transition: 'transform 0.35s ease-out',
+          }}
         >
           <Navigation size={36} className="text-gold drop-shadow-[0_0_12px_var(--glow)]" fill="currentColor" />
-        </motion.div>
+        </div>
 
         <span className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-gold/15 text-gold">
           <Compass size={22} />

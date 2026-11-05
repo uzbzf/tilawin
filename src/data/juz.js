@@ -38,14 +38,15 @@ export function juzRange(juz) {
 
 export function mushafPageUrl(page) {
   const n = String(Math.min(604, Math.max(1, Number(page) || 1))).padStart(3, '0')
-  return `https://www.mp3quran.net/api/quran_pages_svg/${n}.svg`
+  return `https://cdn.quran.ws/svg/pages/v1.1.1/hafs-kfqc/${n}.svg`
 }
 
 export function mushafPageFallbacks(page) {
   const n = String(Math.min(604, Math.max(1, Number(page) || 1))).padStart(3, '0')
   const raw = Number(n)
-  // Prefer Madani PNG (green ayah markers like King Fahd / quran.com)
+  // King Fahd Complex Madani (Hafs) with ayah-end ornaments baked into the page
   return [
+    `https://cdn.quran.ws/svg/pages/v1.1.1/hafs-kfqc/${n}.svg`,
     `https://android.quran.com/data/width_1260/page${n}.png`,
     `https://www.mp3quran.net/api/quran_pages_svg/${n}.svg`,
     `https://www.mp3quran.net/api/quran_pages_jpeg/${raw}.jpg`,

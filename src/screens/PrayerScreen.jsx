@@ -2,7 +2,6 @@ import { AzkarPanel } from '../components/AzkarPanel'
 import { IslamicCalendar } from '../components/IslamicCalendar'
 import { PrayerWidget } from '../components/PrayerWidget'
 import { QiblaCompass } from '../components/QiblaCompass'
-import { TahajjudCard } from '../components/TahajjudCard'
 import { useLocale } from '../i18n/LocaleContext'
 
 export function PrayerScreen() {
@@ -16,7 +15,6 @@ export function PrayerScreen() {
       </div>
       <PrayerWidget />
       <QiblaCompass />
-      <TahajjudCard />
       <AzkarPanel />
       <IslamicCalendar />
     </div>

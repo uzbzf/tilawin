@@ -28,7 +28,6 @@ import { searchSurahs, surahs } from '../data/surahs'
 import { useSound } from '../hooks/useSound'
 import { useLocale } from '../i18n/LocaleContext'
 import { ArabicWithAyahEnd } from './AyahEnd'
-import { SurahBanner } from './SurahBanner'
 import {
   audioUrlForAyah,
   fetchPage,
@@ -501,11 +500,13 @@ export function QuranReader() {
                       const firstSurah = pageAyahs[0]?.surah
                       const surahMeta = surahs.find((s) => s.n === firstSurah)
                       return surahMeta ? (
-                        <div className="mb-3">
-                          <SurahBanner
-                            arabic={`سُورَةُ ${surahMeta.ar}`}
-                            subtitle={titleForSurah(surahMeta, lang)}
-                          />
+                        <div className="mb-3 text-center">
+                          <p className="font-quran text-[1.65rem] leading-relaxed text-[#1a1712]" dir="rtl">
+                            {`سُورَةُ ${surahMeta.ar}`}
+                          </p>
+                          <p className="mt-1 text-[10px] tracking-wide text-[#6b5f4c]">
+                            {titleForSurah(surahMeta, lang)}
+                          </p>
                         </div>
                       ) : null
                     })()}
@@ -800,12 +801,14 @@ export function QuranReader() {
               </button>
             </div>
 
-            <div className="mb-4 flex flex-col items-center text-center">
-              <SurahBanner
-                arabic={meta?.name || ''}
-                subtitle={`${meta?.englishName || ''} · ${t('quran.madani')}`}
-              />
-              <p className="mt-2 text-[10px] text-[var(--muted)]">{TRANSLATIONS[trLang]?.label}</p>
+            <div className="mb-4 text-center">
+              <p className="font-quran text-[1.85rem] leading-relaxed text-[var(--text)]" dir="rtl">
+                {meta?.name || ''}
+              </p>
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                {meta?.englishName} · {t('quran.madani')}
+              </p>
+              <p className="mt-1 text-[10px] text-[var(--muted)]">{TRANSLATIONS[trLang]?.label}</p>
             </div>
 
             {loading && <p className="py-8 text-center text-sm text-[var(--muted)]">{t('quran.loading')}</p>}

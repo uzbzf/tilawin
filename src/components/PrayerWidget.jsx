@@ -160,7 +160,7 @@ export function PrayerWidget() {
                 const stamp = schedule.times[name]
                 if (!stamp) return null
                 const isNext = name === schedule.nextName
-                const isExtra = name === 'sunrise' || name === 'tahajjud'
+                const isExtra = name === 'sunrise'
                 return (
                   <li
                     key={name}

@@ -4,8 +4,8 @@ import { getAladhanParams, readAsrMadhab, readCalcMethod } from './prayerSetting
 /** Five fard prayers — used for «next prayer» countdown */
 export const PRAYER_ORDER = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']
 
-/** Full day list including sunrise & tahajjud */
-export const DISPLAY_ORDER = ['tahajjud', 'fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']
+/** Day list including sunrise (no tahajjud in UI) */
+export const DISPLAY_ORDER = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']
 
 export const PRAYER_LABELS = {
   tahajjud: 'Тахаджуд',

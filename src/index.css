@@ -131,27 +131,24 @@ html.dark .glass-strong {
   font-family: var(--font-quran);
 }
 
-/* Madani-style ayah end — green fill + gold ring (like King Fahd mushaf) */
+/* Plain ayah-end circle — no fill, inherits text color (white in dark theme) */
 .ayah-end-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.65em;
-  height: 1.65em;
-  margin-inline: 0.14em;
+  width: 1.55em;
+  height: 1.55em;
+  margin-inline: 0.12em;
   vertical-align: middle;
-  border: 1.5px solid #c9a84c;
+  border: 1.25px solid currentColor;
   border-radius: 999px;
-  background:
-    radial-gradient(circle at 40% 35%, #5a9e6a 0%, #2f6b45 70%, #245538 100%);
-  color: #f7f1e2;
+  background: transparent;
+  color: inherit;
   font-size: 0.5em;
   font-family: var(--font-quran);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 230, 160, 0.35),
-    0 0 0 0.5px rgba(201, 168, 76, 0.45);
+  opacity: 0.9;
 }
 
 .ayah-end-mark:empty::after {
