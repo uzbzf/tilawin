@@ -396,7 +396,7 @@ const ar = {
     error: 'تعذر التحميل',
     madani: 'المصحف المدني',
     page: 'ص',
-    translator: 'ترجمة إلMir كولييف',
+    translator: 'ترجمة إلمير كولييف',
   },
   contact: { label: 'سؤال؟', hint: 'راسلنا على تيليجرام' },
   prayer: {
