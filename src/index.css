@@ -131,51 +131,25 @@ html.dark .glass-strong {
   font-family: var(--font-quran);
 }
 
-/* SVG ayah-end mark — sized to Arabic line height, no Unicode glyphs */
-:root {
-  --ayah-mark-fill-a: rgba(255, 255, 255, 0.14);
-  --ayah-mark-fill-b: rgba(201, 168, 76, 0.08);
-  --ayah-mark-ring: rgba(255, 255, 255, 0.7);
-  --ayah-mark-inner: rgba(232, 200, 140, 0.38);
-  --ayah-mark-digit: rgba(247, 247, 248, 0.96);
-}
-
-html:not(.dark) {
-  --ayah-mark-fill-a: rgba(255, 255, 255, 0.55);
-  --ayah-mark-fill-b: rgba(201, 168, 76, 0.12);
-  --ayah-mark-ring: rgba(106, 84, 44, 0.55);
-  --ayah-mark-inner: rgba(138, 109, 59, 0.35);
-  --ayah-mark-digit: rgba(26, 23, 18, 0.92);
-}
-
+/* Unicode ayah-end (۝ + digits) via Quran2013 — size matches verse text */
 .arabic-with-ayah-end {
   unicode-bidi: isolate;
 }
 
 .ayah-end-mark {
-  display: inline-block;
-  width: 0.95em;
-  height: 0.95em;
-  margin-inline: 0.18em;
-  vertical-align: -0.12em;
-  overflow: visible;
-  flex-shrink: 0;
-}
-
-.ayah-end-mark__ring {
-  stroke: var(--ayah-mark-ring);
-}
-
-.ayah-end-mark__inner {
-  stroke: var(--ayah-mark-inner);
-}
-
-.ayah-end-mark__digit {
-  fill: var(--ayah-mark-digit);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0;
+  display: inline;
+  margin-inline: 0.12em;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  font-family: var(--font-quran);
+  font-size: 1em;
+  font-weight: 400;
+  line-height: inherit;
+  vertical-align: baseline;
+  unicode-bidi: isolate;
 }
 
 /* Decorative surah title frame */
