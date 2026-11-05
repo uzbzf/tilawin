@@ -1,3 +1,4 @@
+import { formatReminderMessage } from './bot.js'
 import { listEnabledReminders } from './store.js'
 
 const PRAYER_ORDER = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
@@ -55,10 +56,14 @@ export function startReminderCron(bot, { intervalMs = 60_000 } = {}) {
             if (sentCache.has(key)) continue
             sentCache.set(key, Date.now())
 
-            const city = user.city ? ` (${user.city})` : ''
             await bot.sendMessage(
               user.userId,
-              `⏰ Через ${offset} мин — <b>${prayer}</b>${city}.\nВремя намаза: <b>${stamp}</b>.\n Qum ila as-salah.`,
+              formatReminderMessage({
+                prayer,
+                time: stamp,
+                city: user.city,
+                minutes: offset,
+              }),
             )
           }
         } catch (error) {
@@ -67,7 +72,6 @@ export function startReminderCron(bot, { intervalMs = 60_000 } = {}) {
       }),
     )
 
-    // prune old cache keys
     const cutoff = Date.now() - 36 * 60 * 60 * 1000
     for (const [key, ts] of sentCache.entries()) {
       if (ts < cutoff) sentCache.delete(key)

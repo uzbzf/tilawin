@@ -7,6 +7,7 @@ import { SoundToggle } from './components/SoundToggle'
 import { TabBar } from './components/TabBar'
 import { TelegramMainButton } from './components/TelegramMainButton'
 import { ThemeToggle } from './components/ThemeToggle'
+import { usePrayerReminderScheduler } from './hooks/usePrayerReminderScheduler'
 import { TelegramProvider, useTelegram } from './hooks/useTelegram'
 import { useTheme } from './hooks/useTheme'
 import { useLocale } from './i18n/LocaleContext'
@@ -29,6 +30,7 @@ function AppShell({ theme, toggle }) {
   const { isTelegram } = useTelegram()
   const [tab, setTab] = useState('home')
   const Screen = screens[tab] || HomeScreen
+  usePrayerReminderScheduler()
 
   return (
     <div className="relative min-h-svh">

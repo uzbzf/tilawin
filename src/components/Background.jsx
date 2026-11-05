@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useMemo } from 'react'
 import { useMouseParallax } from '../hooks/useMouseParallax'
 
 const orbs = [
@@ -32,22 +33,24 @@ const orbs = [
   },
 ]
 
-const stars = [
-  { t: '8%', l: '18%', s: 1 },
-  { t: '14%', l: '72%', s: 1.4 },
-  { t: '22%', l: '40%', s: 1 },
-  { t: '31%', l: '88%', s: 1.2 },
-  { t: '46%', l: '12%', s: 1 },
-  { t: '58%', l: '64%', s: 1.6 },
-  { t: '70%', l: '28%', s: 1 },
-  { t: '78%', l: '81%', s: 1.3 },
-  { t: '86%', l: '50%', s: 1 },
-]
+function makeStars(count) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: `${(i * 37) % 100}%`,
+    delay: (i % 12) * 0.55,
+    duration: 7 + (i % 8) * 1.1,
+    size: 1 + (i % 3),
+    drift: ((i * 13) % 40) - 20,
+    twinkle: 1.6 + (i % 5) * 0.35,
+  }))
+}
 
 export function Background() {
   const { x, y, scroll } = useMouseParallax()
   const sx = x * 18
   const sy = y * 14 + scroll * 0.06
+  const falling = useMemo(() => makeStars(16), [])
+  const twinkles = useMemo(() => makeStars(28), [])
 
   return (
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden>
@@ -56,25 +59,60 @@ export function Background() {
         <motion.div
           key={i}
           className={`absolute rounded-full blur-3xl ${orb.className}`}
-          style={{ background: `radial-gradient(circle, ${orb.color}, transparent 68%)` }}
+          style={{
+            background: `radial-gradient(circle, ${orb.color}, transparent 68%)`,
+            transform: `translate(${sx * 0.08}px, ${sy * 0.06}px)`,
+          }}
           animate={{ x: orb.x, y: orb.y }}
           transition={{ duration: orb.duration, repeat: Infinity, ease: 'easeInOut' }}
         />
       ))}
-      {stars.map((star, i) => (
-        <span
-          key={i}
-          className="absolute hidden rounded-full bg-white opacity-70 dark:block"
-          style={{
-            top: star.t,
-            left: star.l,
-            width: star.s * 2,
-            height: star.s * 2,
-            boxShadow: '0 0 6px rgba(255,255,255,0.8)',
-            transform: `translate(${sx * 0.15}px, ${sy * 0.12}px)`,
-          }}
-        />
-      ))}
+
+      {/* Soft twinkles — visible in light & dark */}
+      <div className="absolute inset-0">
+        {twinkles.map((star) => (
+          <motion.span
+            key={`tw-${star.id}`}
+            className="absolute rounded-full bg-gold/70 dark:bg-white"
+            style={{
+              top: `${(star.id * 17) % 92}%`,
+              left: star.left,
+              width: star.size,
+              height: star.size,
+              boxShadow: '0 0 6px rgba(212,175,110,0.45)',
+            }}
+            animate={{ opacity: [0.08, 0.55, 0.12], scale: [0.75, 1.25, 0.8] }}
+            transition={{ duration: star.twinkle, repeat: Infinity, ease: 'easeInOut', delay: star.delay }}
+          />
+        ))}
+
+        {falling.map((star) => (
+          <motion.span
+            key={`fall-${star.id}`}
+            className="absolute bg-gradient-to-b from-gold/80 to-transparent dark:from-white/90"
+            style={{
+              left: star.left,
+              width: star.size + 0.5,
+              height: star.size * 10,
+              borderRadius: 999,
+              boxShadow: '0 0 8px rgba(212,175,110,0.35)',
+              rotate: '18deg',
+            }}
+            initial={{ top: '-8%', opacity: 0 }}
+            animate={{
+              top: ['-8%', '110%'],
+              x: [0, star.drift],
+              opacity: [0, 0.7, 0.7, 0],
+            }}
+            transition={{
+              duration: star.duration,
+              repeat: Infinity,
+              ease: 'linear',
+              delay: star.delay,
+            }}
+          />
+        ))}
+      </div>
     </div>
   )
 }

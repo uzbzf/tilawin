@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { createServer } from 'node:http'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createBot, handleUpdate } from './bot.js'
+import { createBot, formatReminderMessage, handleUpdate } from './bot.js'
 import { startReminderCron } from './reminders.js'
 import { upsertReminder } from './store.js'
 
@@ -61,6 +61,26 @@ async function readBody(req) {
   }
 }
 
+async function fetchNextPrayer(lat, lng) {
+  const url = `https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=3&school=1`
+  const response = await fetch(url)
+  if (!response.ok) return null
+  const data = await response.json()
+  const timings = data?.data?.timings
+  if (!timings) return null
+  const order = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
+  const now = new Date()
+  for (const name of order) {
+    const [h, m] = String(timings[name]).split(':').map(Number)
+    const at = new Date(now)
+    at.setHours(h, m, 0, 0)
+    if (at.getTime() > now.getTime() + 60_000) {
+      return { name, time: timings[name] }
+    }
+  }
+  return { name: 'Fajr', time: timings.Fajr }
+}
+
 const server = createServer(async (req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`)
 
@@ -90,6 +110,29 @@ const server = createServer(async (req, res) => {
     return
   }
 
+  if (req.method === 'POST' && url.pathname === '/api/notify') {
+    const body = await readBody(req)
+    if (!bot || !body.userId || !body.prayer || !body.time) {
+      sendJson(res, 400, { ok: false, error: 'userId, prayer, time required' })
+      return
+    }
+    try {
+      await bot.sendMessage(
+        body.userId,
+        formatReminderMessage({
+          prayer: body.prayer,
+          time: body.time,
+          city: body.city || '',
+          minutes: Number(body.minutes) || 15,
+        }),
+      )
+      sendJson(res, 200, { ok: true })
+    } catch (error) {
+      sendJson(res, 500, { ok: false, error: error.message, code: error.code })
+    }
+    return
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/reminders') {
     const body = await readBody(req)
     const userId = body.userId || body.telegramId
@@ -108,16 +151,50 @@ const server = createServer(async (req, res) => {
         initData: body.initData || '',
       })
 
-      if (bot && body.enabled) {
+      let next = null
+      let delivered = false
+      let needStart = false
+
+      if (body.enabled) {
+        try {
+          next = await fetchNextPrayer(Number(body.lat), Number(body.lng))
+        } catch {
+          /* ignore */
+        }
+
+        if (bot) {
+          const text = [
+            '✅ <b>Напоминания включены</b>',
+            '',
+            `Я буду мягко напоминать за <b>${Number(body.offsetMinutes) || 15} минут</b> до каждого намаза.`,
+            next ? `Следующий: <b>${next.name}</b> · <b>${next.time}</b>${body.city ? ` · ${body.city}` : ''}` : '',
+            '',
+            'Важно: хотя бы раз нажми /start у бота, чтобы сообщения доходили.',
+          ]
+            .filter(Boolean)
+            .join('\n')
+
+          try {
+            await bot.sendMessage(userId, text)
+            delivered = true
+          } catch (error) {
+            needStart = error?.code === 403 || /blocked|chat not found|initiate/i.test(error.message || '')
+          }
+        }
+      } else if (bot) {
         await bot
-          .sendMessage(
-            userId,
-            `Напоминания о намазе включены (за ${Number(body.offsetMinutes) || 15} мин)${body.city ? ` · ${body.city}` : ''}.`,
-          )
+          .sendMessage(userId, '🔕 Напоминания о намазе выключены.\nКогда захочешь — включи снова в Mini App.')
           .catch(() => {})
       }
 
-      sendJson(res, 200, { ok: true, reminder: saved, offlineBot: !bot })
+      sendJson(res, 200, {
+        ok: true,
+        reminder: saved,
+        delivered,
+        needStart,
+        nextPrayer: next,
+        offlineBot: !bot,
+      })
     } catch (error) {
       console.error('[reminders api]', error.message)
       sendJson(res, 500, { ok: false, error: error.message })

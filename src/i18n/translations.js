@@ -43,8 +43,10 @@ export const translations = {
       hint: 'Уведомление придёт в Telegram-боте',
       on: 'Напоминания включены',
       off: 'Напоминания выключены',
-      savedLocal: 'Сохранено локально. Подключите API бота для пушей.',
+      savedLocal: 'Сохранено локально. Откройте хаб около намаза — бот напомнит.',
       needTelegram: 'Откройте Mini App в Telegram, чтобы получать пуши.',
+      needStart: 'Сначала нажми /start у бота, затем включи напоминания снова.',
+      openBot: 'Открыть бота и нажать /start',
       error: 'Не удалось сохранить напоминание',
     },
     mood: {
@@ -55,6 +57,7 @@ export const translations = {
       copy: 'Скопировать',
       share: 'Поделиться',
       copied: 'Скопировано',
+      another: 'Другой аят',
       back: 'К настроениям',
       moods: {
         calm: { label: 'Тревожно', sub: 'нужен покой' },
@@ -86,6 +89,10 @@ export const translations = {
       title: 'Обои',
       hint: 'Скачать PNG',
       download: 'Скачать',
+      saved: 'Обои сохранены',
+      shared: 'Отправлено в «Поделиться»',
+      telegramSave: 'Превью открыто — удерживай картинку → Сохранить',
+      error: 'Не удалось сохранить. Попробуйте ещё раз',
     },
     media: {
       screenHint: 'Каллиграфия и последние чтения',
@@ -148,8 +155,10 @@ export const translations = {
       hint: 'Bildirishnoma Telegram botdan keladi',
       on: 'Eslatmalar yoqildi',
       off: 'Eslatmalar o‘chirildi',
-      savedLocal: 'Mahalliy saqlandi. Push uchun bot API ulang.',
+      savedLocal: 'Mahalliy saqlandi. Namoz oldidan hubni oching — bot eslatadi.',
       needTelegram: 'Push uchun Mini Appni Telegramda oching.',
+      needStart: 'Avval botda /start bosing, keyin eslatmani qayta yoqing.',
+      openBot: 'Botni ochib /start bosing',
       error: 'Eslatmani saqlab bo‘lmadi',
     },
     mood: {
@@ -160,6 +169,7 @@ export const translations = {
       copy: 'Nusxa',
       share: 'Ulashish',
       copied: 'Nusxa olindi',
+      another: 'Boshqa oyat',
       back: 'Kayfiyatlarga',
       moods: {
         calm: { label: 'Tashvish', sub: 'tinchlik kerak' },
@@ -191,6 +201,10 @@ export const translations = {
       title: 'Fon rasmlar',
       hint: 'PNG yuklab olish',
       download: 'Yuklab olish',
+      saved: 'Fon saqlandi',
+      shared: 'Ulashish oynasiga yuborildi',
+      telegramSave: 'Preview ochildi — rasmni bosib turing → Saqlash',
+      error: 'Saqlab bo‘lmadi. Qayta urinib ko‘ring',
     },
     media: {
       screenHint: 'Kalligrafiya va so‘nggi tilovatlar',
@@ -253,8 +267,10 @@ export const translations = {
       hint: 'Notification will come from the Telegram bot',
       on: 'Reminders enabled',
       off: 'Reminders disabled',
-      savedLocal: 'Saved locally. Connect the bot API for pushes.',
+      savedLocal: 'Saved locally. Open the hub near prayer time for a bot nudge.',
       needTelegram: 'Open the Mini App in Telegram to receive pushes.',
+      needStart: 'Press /start on the bot first, then enable reminders again.',
+      openBot: 'Open bot and press /start',
       error: 'Could not save reminder',
     },
     mood: {
@@ -265,6 +281,7 @@ export const translations = {
       copy: 'Copy',
       share: 'Share',
       copied: 'Copied',
+      another: 'Another verse',
       back: 'All moods',
       moods: {
         calm: { label: 'Anxious', sub: 'need calm' },
@@ -296,6 +313,10 @@ export const translations = {
       title: 'Wallpapers',
       hint: 'Download PNG',
       download: 'Download',
+      saved: 'Wallpaper saved',
+      shared: 'Opened in the share sheet',
+      telegramSave: 'Preview opened — long-press the image → Save',
+      error: 'Could not save. Please try again',
     },
     media: {
       screenHint: 'Calligraphy and latest recitations',

@@ -1,7 +1,7 @@
 import { Check, Copy, Heart, Search, Share2, Sparkles, Sunrise, Wind } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
-import { searchVerses, verses } from '../data/verses'
+import { pickRandomVerse, searchVerses } from '../data/verses'
 import { useSound } from '../hooks/useSound'
 import { useLocale } from '../i18n/LocaleContext'
 
@@ -15,15 +15,16 @@ const moods = [
 export function MoodVerses({ showSearch = false }) {
   const { lang, t } = useLocale()
   const { click, flip, hover } = useSound()
-  const [active, setActive] = useState(null)
+  const [mood, setMood] = useState(null)
+  const [verse, setVerse] = useState(null)
+  const [flipKey, setFlipKey] = useState(0)
   const [copied, setCopied] = useState(false)
   const [query, setQuery] = useState('')
 
   const results = useMemo(() => (query.trim() ? searchVerses(query, lang) : []), [query, lang])
-  const verse = active ? verses[active] : null
 
   const shareText = verse
-    ? `${verse.arabic}\n${verse.text[lang]}\n— ${verse.surah[lang]} ${verse.ref}`
+    ? `${verse.arabic}\n${verse.text[lang]}\n— ${verse.surah[lang]} ${verse.ref}\n(${verse.translator || 'Эльмир Кулиев'})`
     : ''
 
   const copy = async () => {
@@ -45,28 +46,30 @@ export function MoodVerses({ showSearch = false }) {
         return
       }
     } catch {
-      /* user cancelled */
+      /* cancelled */
     }
-    try {
-      await navigator.clipboard.writeText(shareText)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1600)
-    } catch {
-      /* ignore */
-    }
+    copy()
   }
 
-  const selectVerse = (id) => {
+  const showVerse = (nextVerse, nextMood = mood) => {
+    if (!nextVerse) return
     flip()
-    setActive(id)
+    setMood(nextMood)
+    setVerse(nextVerse)
+    setFlipKey((n) => n + 1)
+  }
+
+  const selectMood = (moodId) => {
+    const next = pickRandomVerse(moodId, verse?.id)
+    showVerse(next, moodId)
   }
 
   return (
-    <section className="glass rounded-3xl p-5" aria-label={t('mood.title')}>
+    <section className="glass overflow-hidden rounded-3xl p-5" aria-label={t('mood.title')}>
       <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--muted)]">
         {t('mood.title')}
       </p>
-      <p className="mt-1 text-xs text-[var(--muted)]">{t('mood.hint')}</p>
+      <p className="mt-1 text-xs leading-snug text-[var(--muted)]">{t('mood.hint')}</p>
 
       {showSearch && (
         <label className="relative mt-4 block">
@@ -89,7 +92,7 @@ export function MoodVerses({ showSearch = false }) {
                 type="button"
                 onClick={() => {
                   click()
-                  selectVerse(item.id)
+                  showVerse(item, mood)
                   setQuery('')
                 }}
                 className="flex w-full flex-col rounded-xl px-3 py-2 text-left hover:bg-white/10"
@@ -97,7 +100,7 @@ export function MoodVerses({ showSearch = false }) {
                 <span className="text-xs text-[var(--muted)]">
                   {item.surah[lang]} · {item.ref}
                 </span>
-                <span className="truncate text-sm text-[var(--text)]">{item.text[lang]}</span>
+                <span className="line-clamp-2 text-sm text-[var(--text)]">{item.text[lang]}</span>
               </button>
             </li>
           ))}
@@ -105,16 +108,16 @@ export function MoodVerses({ showSearch = false }) {
       )}
 
       <div className="mt-4 grid grid-cols-2 gap-2">
-        {moods.map((mood) => {
-          const Icon = mood.icon
-          const selected = active === mood.id
+        {moods.map((item) => {
+          const Icon = item.icon
+          const selected = mood === item.id
           return (
             <button
-              key={mood.id}
+              key={item.id}
               type="button"
               onMouseEnter={hover}
-              onClick={() => selectVerse(mood.id)}
-              className={`flex items-center gap-2.5 rounded-2xl border px-3 py-3 text-left transition ${
+              onClick={() => selectMood(item.id)}
+              className={`flex min-w-0 items-center gap-2.5 overflow-hidden rounded-2xl border px-3 py-3 text-left transition ${
                 selected
                   ? 'border-gold/40 bg-gold/15 ring-1 ring-gold/20'
                   : 'border-[var(--glass-border)] bg-white/5 hover:bg-white/10'
@@ -124,11 +127,11 @@ export function MoodVerses({ showSearch = false }) {
                 <Icon size={16} strokeWidth={1.7} />
               </span>
               <span className="min-w-0">
-                <span className="block text-sm font-medium text-[var(--text)]">
-                  {t(`mood.moods.${mood.id}.label`)}
+                <span className="block truncate text-sm font-medium text-[var(--text)]">
+                  {t(`mood.moods.${item.id}.label`)}
                 </span>
-                <span className="block text-[11px] text-[var(--muted)]">
-                  {t(`mood.moods.${mood.id}.sub`)}
+                <span className="block truncate text-[11px] text-[var(--muted)]">
+                  {t(`mood.moods.${item.id}.sub`)}
                 </span>
               </span>
             </button>
@@ -136,23 +139,28 @@ export function MoodVerses({ showSearch = false }) {
         })}
       </div>
 
-      <div className="relative mt-4 min-h-[168px]" style={{ perspective: 1200 }}>
+      <div className="relative mt-4 min-h-[190px] overflow-hidden">
         <AnimatePresence mode="wait">
           {verse ? (
             <motion.div
-              key={active}
-              initial={{ rotateY: -90, opacity: 0 }}
-              animate={{ rotateY: 0, opacity: 1 }}
-              exit={{ rotateY: 90, opacity: 0 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-2xl border border-[var(--glass-border)] bg-white/5 p-4 backdrop-blur-xl"
+              key={flipKey}
+              initial={{ opacity: 0, rotateX: -28, y: 18, scale: 0.96, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, rotateX: 0, y: 0, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, rotateX: 18, y: -12, scale: 0.98, filter: 'blur(6px)' }}
+              transition={{ type: 'spring', stiffness: 320, damping: 28, mass: 0.65 }}
+              style={{ transformPerspective: 900, transformOrigin: 'center top' }}
+              className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-white/5 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.12)] backdrop-blur-xl"
             >
-              <p className="font-display text-2xl leading-relaxed text-[var(--text)]" dir="rtl">
+              <p
+                className="font-display text-[1.55rem] leading-relaxed break-words text-[var(--text)] sm:text-2xl"
+                dir="rtl"
+              >
                 {verse.arabic}
               </p>
-              <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">{verse.text[lang]}</p>
-              <p className="mt-2 text-[11px] tracking-wide text-[var(--muted)]">
+              <p className="mt-3 text-sm leading-relaxed break-words text-[var(--muted)]">{verse.text[lang]}</p>
+              <p className="mt-2 text-[11px] tracking-wide break-words text-[var(--muted)]">
                 {verse.surah[lang]} · {verse.ref}
+                {lang === 'ru' ? ` · ${verse.translator || 'Эльмир Кулиев'}` : ''}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
@@ -171,6 +179,15 @@ export function MoodVerses({ showSearch = false }) {
                   <Share2 size={13} />
                   {t('mood.share')}
                 </button>
+                {mood && (
+                  <button
+                    type="button"
+                    onClick={() => selectMood(mood)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-xs text-[var(--muted)]"
+                  >
+                    {t('mood.another')}
+                  </button>
+                )}
               </div>
             </motion.div>
           ) : (
@@ -178,7 +195,7 @@ export function MoodVerses({ showSearch = false }) {
               key="empty"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex min-h-[168px] items-center justify-center rounded-2xl border border-dashed border-[var(--glass-border)] px-4 text-center text-sm text-[var(--muted)]"
+              className="flex min-h-[190px] items-center justify-center rounded-2xl border border-dashed border-[var(--glass-border)] px-4 text-center text-sm text-[var(--muted)]"
             >
               {t('mood.hint')}
             </motion.div>

@@ -48,7 +48,7 @@ export function Hero() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.12, ease }}
-        className="font-display text-[2.55rem] font-medium tracking-[0.38em] text-[var(--text)] sm:text-5xl sm:tracking-[0.42em]"
+        className="max-w-full px-2 font-display text-[2.2rem] font-medium tracking-[0.28em] text-[var(--text)] sm:text-5xl sm:tracking-[0.36em]"
       >
         TILAWIN
       </motion.h1>

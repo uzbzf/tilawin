@@ -1,22 +1,10 @@
 import { put } from './_store.js'
+import { fetchNextPrayer, formatEnabledMessage, tg } from './_telegram.js'
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-}
-
-async function telegram(method, body) {
-  const token = process.env.BOT_TOKEN
-  if (!token) throw new Error('BOT_TOKEN missing on server')
-  const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  const data = await response.json()
-  if (!data.ok) throw new Error(data.description || 'Telegram API error')
-  return data.result
 }
 
 export default async function handler(req, res) {
@@ -50,17 +38,53 @@ export default async function handler(req, res) {
 
     if (reminder.enabled) {
       await put(`reminder:${userId}`, reminder)
-      if (process.env.BOT_TOKEN) {
-        await telegram('sendMessage', {
-          chat_id: userId,
-          text: `Напоминания о намазе включены (за ${reminder.offsetMinutes} мин)${reminder.city ? ` · ${reminder.city}` : ''}.`,
-        }).catch(() => null)
+      let next = null
+      try {
+        next = await fetchNextPrayer(reminder.lat, reminder.lng)
+      } catch {
+        /* ignore */
       }
-    } else {
-      await put(`reminder:${userId}`, null)
+
+      let delivered = false
+      let needStart = false
+      if (process.env.BOT_TOKEN) {
+        try {
+          await tg('sendMessage', {
+            chat_id: userId,
+            text: formatEnabledMessage({
+              nextName: next?.name,
+              nextTime: next?.time,
+              city: reminder.city,
+              minutes: reminder.offsetMinutes,
+            }),
+            parse_mode: 'HTML',
+            disable_web_page_preview: true,
+          })
+          delivered = true
+        } catch (error) {
+          needStart = error?.code === 403 || /blocked|chat not found|initiate/i.test(error.message || '')
+        }
+      }
+
+      res.status(200).json({
+        ok: true,
+        reminder,
+        delivered,
+        needStart,
+        nextPrayer: next ? { name: next.name, time: next.time } : null,
+      })
+      return
     }
 
-    res.status(200).json({ ok: true, reminder: reminder.enabled ? reminder : null })
+    await put(`reminder:${userId}`, null)
+    if (process.env.BOT_TOKEN) {
+      await tg('sendMessage', {
+        chat_id: userId,
+        text: '🔕 Напоминания о намазе выключены.\nКогда захочешь — включи снова в Mini App.',
+        parse_mode: 'HTML',
+      }).catch(() => null)
+    }
+    res.status(200).json({ ok: true, reminder: null })
   } catch (error) {
     res.status(500).json({ ok: false, error: error.message })
   }

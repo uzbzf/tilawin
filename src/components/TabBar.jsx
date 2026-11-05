@@ -47,7 +47,9 @@ export function TabBar({ active, onChange }) {
               )}
               <span className="relative z-10 flex flex-col items-center gap-0.5">
                 <Icon size={18} strokeWidth={selected ? 2 : 1.6} />
-                <span className="text-[9px] font-medium tracking-wide">{t(tab.labelKey)}</span>
+                <span className="max-w-[4.2rem] truncate text-[9px] font-medium tracking-wide">
+                  {t(tab.labelKey)}
+                </span>
               </span>
             </button>
           )
