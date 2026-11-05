@@ -1,20 +1,21 @@
 import { stripAyahEnd, toArabicIndic } from '../lib/ayahMark'
 
 /**
- * Ayah number as plain text (no Quran2013 circled glyphs / CSS ring).
- * Size tracks parent Arabic text via em.
+ * Madani ayah-end mark: U+06DD + Arabic-Indic digits.
+ * Quran2013 draws ONE ornamental circle with the number inside.
+ * No CSS border — the ring is the glyph itself.
  */
 export function AyahEnd({ n, className = '' }) {
   const digits = toArabicIndic(n)
   if (!digits) return null
   return (
-    <span className={`ayah-end-mark ${className}`.trim()} dir="ltr" aria-label={String(n)}>
-      {digits}
+    <span className={`ayah-end-mark ${className}`.trim()} dir="rtl" aria-label={String(n)}>
+      {`\u06DD${digits}`}
     </span>
   )
 }
 
-/** Arabic text with one plain ayah number; strips API markers first. */
+/** Arabic text + one Madani ayah-end mark (API markers stripped first). */
 export function ArabicWithAyahEnd({ text, number, className = '' }) {
   const cleaned = stripAyahEnd(text)
   return (
