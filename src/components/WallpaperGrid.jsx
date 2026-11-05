@@ -90,8 +90,7 @@ function drawParticles(ctx, theme, width, height) {
 async function waitFonts() {
   try {
     if (document.fonts?.load) {
-      await document.fonts.load('72px "UthmanicHafs"')
-      await document.fonts.load('72px "Amiri Quran"')
+      await document.fonts.load('72px "Quran2013"')
     }
   } catch {
     /* ignore */
@@ -123,7 +122,7 @@ async function renderWallpaperBlob(item, caption, theme) {
 
   ctx.fillStyle = theme.text
   ctx.textAlign = 'center'
-  ctx.font = '72px "UthmanicHafs", "Amiri Quran", "Noto Naskh Arabic", serif'
+  ctx.font = '72px "Quran2013", "Noto Naskh Arabic", serif'
   wrapText(ctx, item.arabic, 540, 820, 860, 92)
 
   ctx.fillStyle = theme.muted
