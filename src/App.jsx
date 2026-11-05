@@ -34,7 +34,7 @@ function AppShell() {
   usePrayerReminderScheduler()
 
   return (
-    <div className="relative min-h-svh">
+    <div className="app-shell relative min-h-svh">
       <Background />
       <TapRipple />
 

@@ -22,7 +22,7 @@ const ru = {
     label: 'Разделы',
     home: 'Хаб',
     prayer: 'Намаз',
-    verses: 'Аяты',
+    verses: 'Коран',
     habits: 'Привычки',
     media: 'Медиа',
     settings: 'Ещё',
@@ -49,6 +49,8 @@ const ru = {
     madani: 'Мединский мусхаф',
     page: 'стр.',
     juz: 'Джуз',
+    hizb: 'Хизб',
+    openMushaf: 'Открыть Мусхаф',
     translator: 'пер. Эльмир Кулиев',
     modeSurah: 'По сурам',
     modePage: 'Страницы',
@@ -213,7 +215,7 @@ const en = {
     label: 'Sections',
     home: 'Hub',
     prayer: 'Prayer',
-    verses: 'Verses',
+    verses: 'Quran',
     habits: 'Habits',
     media: 'Media',
     settings: 'More',
@@ -240,6 +242,8 @@ const en = {
     madani: 'Madani Mushaf',
     page: 'p.',
     juz: 'Juz',
+    hizb: 'Hizb',
+    openMushaf: 'Open Mushaf',
     translator: 'tr. Elmir Kuliev',
     modeSurah: 'By surah',
     modePage: 'Pages',
@@ -399,7 +403,7 @@ const ar = {
     label: 'الأقسام',
     home: 'الرئيسية',
     prayer: 'الصلاة',
-    verses: 'آيات',
+    verses: 'القرآن',
     habits: 'عادات',
     media: 'وسائط',
     settings: 'المزيد',
@@ -426,6 +430,8 @@ const ar = {
     madani: 'المصحف المدني',
     page: 'ص',
     juz: 'جزء',
+    hizb: 'حزب',
+    openMushaf: 'فتح المصحف',
     translator: 'ترجمة إلمير كولييف',
     modeSurah: 'بالسور',
     modePage: 'صفحات',
@@ -562,7 +568,7 @@ const ar = {
 
 const kk = {
   tagline: 'Құран оқу. Байсалды, таза, күн сайын.',
-  tabs: { home: 'Басты', prayer: 'Намаз', verses: 'Аяттар', habits: 'Әдеттер', media: 'Медиа', settings: 'Тағы' },
+  tabs: { home: 'Басты', prayer: 'Намаз', verses: 'Құран', habits: 'Әдеттер', media: 'Медиа', settings: 'Тағы' },
   prayer: {
     next: 'Келесі намаз',
     today: 'Бүгінгі уақыттар',
@@ -586,7 +592,7 @@ const kk = {
 
 const ky = {
   tagline: 'Куран окуу. Тынч, таза, күн сайын.',
-  tabs: { home: 'Башкы', prayer: 'Намаз', verses: 'Аяттар', habits: 'Адаттар', media: 'Медиа', settings: 'Дагы' },
+  tabs: { home: 'Башкы', prayer: 'Намаз', verses: 'Куран', habits: 'Адаттар', media: 'Медиа', settings: 'Дагы' },
   prayer: {
     next: 'Кийинки намаз',
     today: 'Бүгүнкү убакыттар',
@@ -610,7 +616,7 @@ const ky = {
 
 const tg = {
   tagline: 'Қироати Қуръон. Ором, пок, ҳар рӯз.',
-  tabs: { home: 'Асосӣ', prayer: 'Намоз', verses: 'Оятҳо', habits: 'Одатҳо', media: 'Медиа', settings: 'Бештар' },
+  tabs: { home: 'Асосӣ', prayer: 'Намоз', verses: 'Қуръон', habits: 'Одатҳо', media: 'Медиа', settings: 'Бештар' },
   prayer: {
     next: 'Намози навбатӣ',
     today: 'Вақтҳои имрӯз',
@@ -634,7 +640,7 @@ const tg = {
 
 const tt = {
   tagline: 'Коръән уку. Тыныч, чиста, һәр көн.',
-  tabs: { home: 'Баш', prayer: 'Намаз', verses: 'Аятьләр', habits: 'Гадәтләр', media: 'Медиа', settings: 'Тагын' },
+  tabs: { home: 'Баш', prayer: 'Намаз', verses: 'Коръән', habits: 'Гадәтләр', media: 'Медиа', settings: 'Тагын' },
   prayer: {
     next: 'Киләсе намаз',
     today: 'Бүгенге вакытлар',
@@ -658,7 +664,7 @@ const tt = {
 
 const ce = {
   tagline: 'Къуръан ешар. Тийна, цӀена, хӀора дийнахь.',
-  tabs: { home: 'Коьрта', prayer: 'Намаз', verses: 'Аяташ', habits: 'Ӏадаташ', media: 'Медиа', settings: 'Кхин' },
+  tabs: { home: 'Коьрта', prayer: 'Намаз', verses: 'Къуръан', habits: 'Ӏадаташ', media: 'Медиа', settings: 'Кхин' },
   prayer: {
     next: 'ТӀехьара намаз',
     today: 'Таханара хенаш',

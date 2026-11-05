@@ -85,6 +85,17 @@ html[data-telegram='1'] #root {
   min-height: var(--tg-viewport-stable-height, 100svh);
 }
 
+/* Mushaf / fullscreen reader: block background interaction */
+html[data-mushaf-open='1'] body {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+html[data-mushaf-open='1'] .app-shell {
+  pointer-events: none;
+  user-select: none;
+}
+
 button,
 a {
   cursor: pointer;
