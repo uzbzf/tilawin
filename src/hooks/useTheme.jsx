@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { getWebApp, isTelegramWebApp } from '../lib/telegram'
 
 const KEY = 'tilawin-theme'
+const ThemeContext = createContext(null)
 
 function readTheme() {
   try {
@@ -25,7 +26,7 @@ function applyTheme(theme) {
   if (meta) meta.setAttribute('content', color)
 }
 
-export function useTheme() {
+export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(readTheme)
 
   useEffect(() => {
@@ -41,5 +42,16 @@ export function useTheme() {
     setTheme((current) => (current === 'dark' ? 'light' : 'dark'))
   }, [])
 
-  return { theme, setTheme, toggle, isDark: theme === 'dark' }
+  const value = useMemo(
+    () => ({ theme, setTheme, toggle, isDark: theme === 'dark' }),
+    [theme, toggle],
+  )
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+}
+
+export function useTheme() {
+  const ctx = useContext(ThemeContext)
+  if (!ctx) throw new Error('useTheme must be used within ThemeProvider')
+  return ctx
 }

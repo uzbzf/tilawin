@@ -25,6 +25,30 @@ const ru = {
     verses: 'Аяты',
     habits: 'Привычки',
     media: 'Медиа',
+    settings: 'Ещё',
+  },
+  settings: {
+    hint: 'Язык, оформление, тема и звук',
+    theme: 'Тема',
+    sound: 'Звук',
+    volume: 'Громкость',
+    volumeHint: 'Потяни ползунок и отпусти — услышишь пример',
+  },
+  quran: {
+    title: 'Священный Коран',
+    hint: 'Мединский мусхаф (Uthmani) · перевод Э. Кулиева',
+    search: 'Сура или 2:255…',
+    searchHint: 'Формат сура:аят — например 1:5 или 2:255',
+    back: 'К списку',
+    withTranslation: 'С переводом',
+    arabicOnly: 'Только арабский',
+    fullscreen: 'На весь экран',
+    exitFullscreen: 'Свернуть',
+    loading: 'Загружаем суру…',
+    error: 'Не удалось загрузить. Проверьте интернет',
+    madani: 'Мединский мусхаф',
+    page: 'стр.',
+    translator: 'пер. Эльмир Кулиев',
   },
   contact: {
     label: 'Есть вопрос?',
@@ -78,7 +102,7 @@ const ru = {
   mood: {
     title: 'Аят под настроение',
     hint: 'Выберите состояние — карточка перевернётся',
-    screenHint: 'Дуа, поиск сур и аяты по настроению',
+    screenHint: 'Полный Коран, дуа и аяты по настроению',
     search: 'Поиск по словам…',
     copy: 'Скопировать',
     share: 'Поделиться',
@@ -177,6 +201,30 @@ const en = {
     verses: 'Verses',
     habits: 'Habits',
     media: 'Media',
+    settings: 'More',
+  },
+  settings: {
+    hint: 'Language, appearance, theme and sound',
+    theme: 'Theme',
+    sound: 'Sound',
+    volume: 'Volume',
+    volumeHint: 'Drag and release to hear a sample',
+  },
+  quran: {
+    title: 'The Noble Quran',
+    hint: 'Madani Mushaf (Uthmani) · Kuliev translation',
+    search: 'Surah or 2:255…',
+    searchHint: 'Use surah:ayah — e.g. 1:5 or 2:255',
+    back: 'Back to list',
+    withTranslation: 'With translation',
+    arabicOnly: 'Arabic only',
+    fullscreen: 'Fullscreen',
+    exitFullscreen: 'Exit',
+    loading: 'Loading surah…',
+    error: 'Could not load. Check your connection',
+    madani: 'Madani Mushaf',
+    page: 'p.',
+    translator: 'tr. Elmir Kuliev',
   },
   contact: {
     label: 'Have a question?',
@@ -230,7 +278,7 @@ const en = {
   mood: {
     title: 'Verse for your mood',
     hint: 'Pick a state — the card will flip',
-    screenHint: 'Du‘a, surah search and mood verses',
+    screenHint: 'Full Quran, du‘a and mood verses',
     search: 'Search by words…',
     copy: 'Copy',
     share: 'Share',
@@ -325,6 +373,30 @@ const ar = {
     verses: 'آيات',
     habits: 'عادات',
     media: 'وسائط',
+    settings: 'المزيد',
+  },
+  settings: {
+    hint: 'اللغة والمظهر والصوت',
+    theme: 'السمة',
+    sound: 'الصوت',
+    volume: 'مستوى الصوت',
+    volumeHint: 'حرّك الشريط ثم أفلت لسماع عينة',
+  },
+  quran: {
+    title: 'القرآن الكريم',
+    hint: 'المصحف المدني · ترجمة كولييف',
+    search: 'سورة أو 2:255…',
+    searchHint: 'الصيغة سورة:آية مثل 1:5',
+    back: 'رجوع',
+    withTranslation: 'مع الترجمة',
+    arabicOnly: 'عربي فقط',
+    fullscreen: 'ملء الشاشة',
+    exitFullscreen: 'تصغير',
+    loading: 'جاري التحميل…',
+    error: 'تعذر التحميل',
+    madani: 'المصحف المدني',
+    page: 'ص',
+    translator: 'ترجمة إلMir كولييف',
   },
   contact: { label: 'سؤال؟', hint: 'راسلنا على تيليجرام' },
   prayer: {
@@ -447,7 +519,7 @@ const ar = {
 
 const kk = {
   tagline: 'Құран оқу. Байсалды, таза, күн сайын.',
-  tabs: { home: 'Басты', prayer: 'Намаз', verses: 'Аяттар', habits: 'Әдеттер', media: 'Медиа' },
+  tabs: { home: 'Басты', prayer: 'Намаз', verses: 'Аяттар', habits: 'Әдеттер', media: 'Медиа', settings: 'Тағы' },
   prayer: {
     next: 'Келесі намаз',
     today: 'Бүгінгі уақыттар',
@@ -471,7 +543,7 @@ const kk = {
 
 const ky = {
   tagline: 'Куран окуу. Тынч, таза, күн сайын.',
-  tabs: { home: 'Башкы', prayer: 'Намаз', verses: 'Аяттар', habits: 'Адаттар', media: 'Медиа' },
+  tabs: { home: 'Башкы', prayer: 'Намаз', verses: 'Аяттар', habits: 'Адаттар', media: 'Медиа', settings: 'Дагы' },
   prayer: {
     next: 'Кийинки намаз',
     today: 'Бүгүнкү убакыттар',
@@ -495,7 +567,7 @@ const ky = {
 
 const tg = {
   tagline: 'Қироати Қуръон. Ором, пок, ҳар рӯз.',
-  tabs: { home: 'Асосӣ', prayer: 'Намоз', verses: 'Оятҳо', habits: 'Одатҳо', media: 'Медиа' },
+  tabs: { home: 'Асосӣ', prayer: 'Намоз', verses: 'Оятҳо', habits: 'Одатҳо', media: 'Медиа', settings: 'Бештар' },
   prayer: {
     next: 'Намози навбатӣ',
     today: 'Вақтҳои имрӯз',
@@ -519,7 +591,7 @@ const tg = {
 
 const tt = {
   tagline: 'Коръән уку. Тыныч, чиста, һәр көн.',
-  tabs: { home: 'Баш', prayer: 'Намаз', verses: 'Аятьләр', habits: 'Гадәтләр', media: 'Медиа' },
+  tabs: { home: 'Баш', prayer: 'Намаз', verses: 'Аятьләр', habits: 'Гадәтләр', media: 'Медиа', settings: 'Тагын' },
   prayer: {
     next: 'Киләсе намаз',
     today: 'Бүгенге вакытлар',
@@ -543,7 +615,7 @@ const tt = {
 
 const ce = {
   tagline: 'Къуръан ешар. Тийна, цӀена, хӀора дийнахь.',
-  tabs: { home: 'Коьрта', prayer: 'Намаз', verses: 'Аяташ', habits: 'Ӏадаташ', media: 'Медиа' },
+  tabs: { home: 'Коьрта', prayer: 'Намаз', verses: 'Аяташ', habits: 'Ӏадаташ', media: 'Медиа', settings: 'Кхин' },
   prayer: {
     next: 'ТӀехьара намаз',
     today: 'Таханара хенаш',

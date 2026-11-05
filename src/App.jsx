@@ -2,23 +2,19 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
 import { Background } from './components/Background'
 import { InstallBanner } from './components/InstallBanner'
-import { LanguageSwitcher } from './components/LanguageSwitcher'
-import { SkinPicker } from './components/SkinPicker'
-import { SoundToggle } from './components/SoundToggle'
 import { TabBar } from './components/TabBar'
 import { TapRipple } from './components/TapRipple'
 import { TelegramMainButton } from './components/TelegramMainButton'
-import { ThemeToggle } from './components/ThemeToggle'
 import { usePrayerReminderScheduler } from './hooks/usePrayerReminderScheduler'
 import { SkinProvider } from './hooks/useSkin'
 import { useSound } from './hooks/useSound'
 import { TelegramProvider, useTelegram } from './hooks/useTelegram'
 import { useTheme } from './hooks/useTheme'
-import { useLocale } from './i18n/LocaleContext'
 import { HabitsScreen } from './screens/HabitsScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { MediaScreen } from './screens/MediaScreen'
 import { PrayerScreen } from './screens/PrayerScreen'
+import { SettingsScreen } from './screens/SettingsScreen'
 import { VersesScreen } from './screens/VersesScreen'
 
 const screens = {
@@ -27,10 +23,10 @@ const screens = {
   verses: VersesScreen,
   habits: HabitsScreen,
   media: MediaScreen,
+  settings: SettingsScreen,
 }
 
-function AppShell({ theme, toggle }) {
-  const { t } = useLocale()
+function AppShell() {
   const { isTelegram } = useTelegram()
   const { page } = useSound()
   const [tab, setTab] = useState('home')
@@ -42,15 +38,8 @@ function AppShell({ theme, toggle }) {
       <Background />
       <TapRipple />
 
-      <div className="fixed top-[max(0.85rem,calc(env(safe-area-inset-top)+var(--tg-content-top,0px)+0.25rem))] right-[max(0.85rem,calc(env(safe-area-inset-right)+0.35rem))] z-20 flex items-center gap-2">
-        <LanguageSwitcher />
-        <SkinPicker />
-        <SoundToggle onLabel={t('soundOn')} offLabel={t('soundOff')} />
-        <ThemeToggle theme={theme} onToggle={toggle} lightLabel={t('themeLight')} darkLabel={t('themeDark')} />
-      </div>
-
       <div
-        className={`mx-auto flex w-full max-w-md flex-col overflow-x-hidden px-4 pt-[max(4.25rem,calc(env(safe-area-inset-top)+var(--tg-content-top,0px)+3.5rem))] sm:max-w-lg ${
+        className={`mx-auto flex w-full max-w-md flex-col overflow-x-hidden px-4 pt-[max(1.25rem,calc(env(safe-area-inset-top)+var(--tg-content-top,0px)+0.75rem))] sm:max-w-lg ${
           isTelegram
             ? 'pb-[max(7.5rem,calc(env(safe-area-inset-bottom)+var(--tg-safe-bottom,0px)+6.25rem))]'
             : 'pb-[6.75rem]'
@@ -83,12 +72,12 @@ function AppShell({ theme, toggle }) {
 }
 
 export default function App() {
-  const { theme, toggle, isDark } = useTheme()
+  const { theme, isDark } = useTheme()
 
   return (
     <TelegramProvider theme={theme}>
       <SkinProvider isDark={isDark}>
-        <AppShell theme={theme} toggle={toggle} />
+        <AppShell />
       </SkinProvider>
     </TelegramProvider>
   )

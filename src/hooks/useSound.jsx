@@ -1,7 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { playSound, setSoundEnabled, unlockAudio } from '../lib/sounds'
+import {
+  getSoundVolume,
+  playSound,
+  setSoundEnabled,
+  setSoundVolume,
+  unlockAudio,
+} from '../lib/sounds'
 
 const KEY = 'tilawin-sound'
+const VOL_KEY = 'tilawin-sound-volume'
 const SoundContext = createContext(null)
 
 function readEnabled() {
@@ -12,8 +19,21 @@ function readEnabled() {
   }
 }
 
+function readVolume() {
+  try {
+    const raw = localStorage.getItem(VOL_KEY)
+    if (raw == null) return 0.72
+    const n = Number(raw)
+    if (Number.isFinite(n)) return Math.min(1, Math.max(0, n))
+  } catch {
+    /* ignore */
+  }
+  return 0.72
+}
+
 export function SoundProvider({ children }) {
   const [enabled, setEnabled] = useState(readEnabled)
+  const [volume, setVolumeState] = useState(readVolume)
 
   useEffect(() => {
     setSoundEnabled(enabled)
@@ -25,6 +45,16 @@ export function SoundProvider({ children }) {
   }, [enabled])
 
   useEffect(() => {
+    setSoundVolume(volume)
+    try {
+      localStorage.setItem(VOL_KEY, String(volume))
+    } catch {
+      /* ignore */
+    }
+  }, [volume])
+
+  useEffect(() => {
+    setSoundVolume(getSoundVolume() || volume)
     const unlock = () => unlockAudio()
     window.addEventListener('pointerdown', unlock, { once: true })
     window.addEventListener('keydown', unlock, { once: true })
@@ -46,14 +76,22 @@ export function SoundProvider({ children }) {
       return
     }
     setSoundEnabled(true)
-    playSound('click')
     setEnabled(true)
+    playSound('click')
   }, [enabled])
+
+  const setVolume = useCallback((next) => {
+    const value = Math.min(1, Math.max(0, Number(next) || 0))
+    setVolumeState(value)
+    setSoundVolume(value)
+  }, [])
 
   const value = useMemo(
     () => ({
       enabled,
       toggle,
+      volume,
+      setVolume,
       play,
       click: () => playSound('click'),
       tasbeeh: () => playSound('tasbeeh'),
@@ -64,7 +102,7 @@ export function SoundProvider({ children }) {
       whoosh: () => playSound('whoosh'),
       page: () => playSound('page'),
     }),
-    [enabled, play, toggle],
+    [enabled, play, toggle, volume, setVolume],
   )
 
   return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>

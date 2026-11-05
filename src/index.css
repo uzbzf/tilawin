@@ -5,6 +5,7 @@
 @theme {
   --font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
   --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-quran: 'UthmanicHafs', 'Amiri Quran', 'Noto Naskh Arabic', serif;
   --color-gold: #e8e8ee;
   --color-gold-bright: #f7f7f8;
   --color-emerald: #34d399;
@@ -108,4 +109,8 @@ a {
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow), 0 0 40px var(--glow);
+}
+
+@utility font-quran {
+  font-family: var(--font-quran);
 }

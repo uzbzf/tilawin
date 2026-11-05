@@ -1,4 +1,4 @@
-import { BookOpen, Home, Image, MoonStar, Sparkles } from 'lucide-react'
+import { BookOpen, Home, Image, MoonStar, Settings, Sparkles } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useSound } from '../hooks/useSound'
 import { useLocale } from '../i18n/LocaleContext'
@@ -9,6 +9,7 @@ const tabs = [
   { id: 'verses', icon: BookOpen, labelKey: 'tabs.verses' },
   { id: 'habits', icon: Sparkles, labelKey: 'tabs.habits' },
   { id: 'media', icon: Image, labelKey: 'tabs.media' },
+  { id: 'settings', icon: Settings, labelKey: 'tabs.settings' },
 ]
 
 export function TabBar({ active, onChange }) {
@@ -17,10 +18,10 @@ export function TabBar({ active, onChange }) {
 
   return (
     <nav
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(0.55rem,env(safe-area-inset-bottom))]"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-2 pb-[max(0.55rem,env(safe-area-inset-bottom))] sm:px-3"
       aria-label={t('tabs.label')}
     >
-      <div className="pointer-events-auto glass-strong mx-auto flex max-w-md items-stretch gap-0.5 rounded-[1.6rem] p-1.5 shadow-[0_12px_40px_var(--glow)]">
+      <div className="pointer-events-auto glass-strong mx-auto flex max-w-lg items-stretch gap-0.5 rounded-[1.6rem] p-1.5 shadow-[0_12px_40px_var(--glow)]">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const selected = active === tab.id
@@ -34,7 +35,7 @@ export function TabBar({ active, onChange }) {
                 onChange(tab.id)
               }}
               data-tap
-              className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-2 transition ${
+              className={`relative flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-2xl px-0.5 py-2 transition ${
                 selected ? 'text-[var(--text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
               }`}
               aria-current={selected ? 'page' : undefined}
@@ -47,8 +48,8 @@ export function TabBar({ active, onChange }) {
                 />
               )}
               <span className="relative z-10 flex flex-col items-center gap-0.5">
-                <Icon size={18} strokeWidth={selected ? 2 : 1.6} />
-                <span className="max-w-[4.2rem] truncate text-[9px] font-medium tracking-wide">
+                <Icon size={16} strokeWidth={selected ? 2 : 1.6} />
+                <span className="max-w-full truncate text-[8px] font-medium tracking-wide sm:text-[9px]">
                   {t(tab.labelKey)}
                 </span>
               </span>

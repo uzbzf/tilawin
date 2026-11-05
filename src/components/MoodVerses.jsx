@@ -152,7 +152,7 @@ export function MoodVerses({ showSearch = false }) {
               className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-white/5 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.12)] backdrop-blur-xl"
             >
               <p
-                className="font-display text-[1.55rem] leading-relaxed break-words text-[var(--text)] sm:text-2xl"
+                className="font-quran text-[1.65rem] leading-[2] break-words text-[var(--text)] sm:text-[1.85rem]"
                 dir="rtl"
               >
                 {verse.arabic}
