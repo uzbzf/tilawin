@@ -1,5 +1,5 @@
 import { list } from '../_store.js'
-import { formatReminderMessage, tg } from '../_telegram.js'
+import { formatFridayKahfMessage, formatReminderMessage, tg } from '../_telegram.js'
 
 const PRAYER_ORDER = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
 const sent = globalThis.__tilawinSent || (globalThis.__tilawinSent = new Map())
@@ -22,7 +22,6 @@ async function fetchSchedule(lat, lng) {
 export default async function handler(req, res) {
   const auth = req.headers.authorization || ''
   const secret = process.env.CRON_SECRET
-  // Allow Vercel Cron (no secret) or external cron with Bearer secret
   const fromVercel = Boolean(req.headers['x-vercel-cron'])
   if (secret && !fromVercel && auth !== `Bearer ${secret}`) {
     res.status(401).json({ ok: false, error: 'unauthorized' })
@@ -37,14 +36,33 @@ export default async function handler(req, res) {
   const users = await list('reminder:')
   const now = new Date()
   const day = now.toISOString().slice(0, 10)
+  const isFriday = now.getDay() === 5
   const windowMs = 90_000
   let sentCount = 0
 
   for (const user of users) {
     try {
+      if (!user?.enabled) continue
+
+      // Friday Al-Kahf ~ 08:00 local window (server uses user day via UTC day key + morning hour)
+      if (user.fridayKahf && isFriday) {
+        const kahfKey = `${user.userId}:${day}:kahf`
+        const hour = now.getHours()
+        if (!sent.has(kahfKey) && hour >= 7 && hour <= 11) {
+          sent.set(kahfKey, Date.now())
+          await tg('sendMessage', {
+            chat_id: user.userId,
+            text: formatFridayKahfMessage(),
+            parse_mode: 'HTML',
+            disable_web_page_preview: true,
+          })
+          sentCount += 1
+        }
+      }
+
       const timings = await fetchSchedule(user.lat, user.lng)
       if (!timings) continue
-      const offset = Number(user.offsetMinutes) || 15
+      const offset = Number(user.offsetMinutes) || 0
 
       for (const prayer of PRAYER_ORDER) {
         const stamp = timings[prayer]

@@ -23,13 +23,17 @@ export const PRAYER_LABELS = {
   Isha: 'Иша',
 }
 
-export function formatReminderMessage({ prayer, time, city, minutes = 15 }) {
+export function formatReminderMessage({ prayer, time, city, minutes = 0 }) {
   const name = PRAYER_LABELS[prayer] || prayer
   const place = city ? `\n📍 ${city}` : ''
+  const lead =
+    Number(minutes) > 0
+      ? `До намаза <b>${name}</b> осталось около <b>${minutes} минут</b>.`
+      : `Наступило время намаза <b>${name}</b>.`
   return [
     '🌙 <b>Напоминание о намазе</b>',
     '',
-    `До намаза <b>${name}</b> осталось около <b>${minutes} минут</b>.`,
+    lead,
     `🕒 Время: <b>${time}</b>${place}`,
     '',
     'Приготовься со спокойным сердцем.',
@@ -39,20 +43,37 @@ export function formatReminderMessage({ prayer, time, city, minutes = 15 }) {
   ].join('\n')
 }
 
-export function formatEnabledMessage({ nextName, nextTime, city, minutes = 15 }) {
+export function formatEnabledMessage({ nextName, nextTime, city, minutes = 0, fridayKahf = false }) {
   const name = PRAYER_LABELS[nextName] || nextName || '—'
+  const when =
+    Number(minutes) > 0
+      ? `Я буду мягко напоминать за <b>${minutes} минут</b> до каждого намаза.`
+      : 'Я буду уведомлять, когда <b>наступит время намаза</b>.'
   return [
     '✅ <b>Напоминания включены</b>',
     '',
-    `Я буду мягко напоминать за <b>${minutes} минут</b> до каждого намаза.`,
+    when,
+    fridayKahf ? '📖 По пятницам — напоминание прочесть суру <b>Аль-Кахф</b>.' : '',
     nextTime ? `Следующий: <b>${name}</b> · <b>${nextTime}</b>${city ? ` · ${city}` : ''}` : '',
     '',
     'Важно: хотя бы раз нажми /start у бота, чтобы сообщения доходили.',
     '',
-    'Открывай хаб, когда захочешь тасбих, аяты и трекер привычек.',
+    'Открывай хаб: мусхаф, Кибла, 99 имён, Тахаджуд и тасбих.',
   ]
     .filter(Boolean)
     .join('\n')
+}
+
+export function formatFridayKahfMessage() {
+  return [
+    '📖 <b>Пятница · сура Аль-Кахф</b>',
+    '',
+    'Сегодня пятница. Пророк ﷺ рекомендовал читать суру <b>Аль-Кахф</b> в этот день.',
+    '',
+    'Открой хаб → Коран → сура 18.',
+    '',
+    '🤲 TILAWIN',
+  ].join('\n')
 }
 
 export async function fetchNextPrayer(lat, lng) {

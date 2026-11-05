@@ -1,3 +1,4 @@
+import { AsmaUlHusna } from '../components/AsmaUlHusna'
 import { MoodVerses } from '../components/MoodVerses'
 import { QuranReader } from '../components/QuranReader'
 import { useLocale } from '../i18n/LocaleContext'
@@ -12,6 +13,7 @@ export function VersesScreen() {
         <p className="mt-1 text-xs text-[var(--muted)]">{t('mood.screenHint')}</p>
       </div>
       <QuranReader />
+      <AsmaUlHusna />
       <MoodVerses showSearch />
     </div>
   )

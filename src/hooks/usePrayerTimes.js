@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { fetchSchedule, getSchedule } from '../lib/prayer'
+import { usePrayerSettings } from './usePrayerSettings'
 
 function dayKey(date) {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 }
 
 export function usePrayerTimes(lat, lng) {
+  const { methodId, asrId } = usePrayerSettings()
   const [now, setNow] = useState(() => new Date())
   const [remote, setRemote] = useState(null)
   const today = dayKey(now)
@@ -20,7 +22,7 @@ export function usePrayerTimes(lat, lng) {
     let cancelled = false
     setRemote(null)
 
-    fetchSchedule(lat, lng, new Date())
+    fetchSchedule(lat, lng, new Date(), methodId, asrId)
       .then((schedule) => {
         if (!cancelled) setRemote(schedule)
       })
@@ -31,15 +33,15 @@ export function usePrayerTimes(lat, lng) {
     return () => {
       cancelled = true
     }
-  }, [lat, lng, today])
+  }, [lat, lng, today, methodId, asrId])
 
-  if (lat == null || lng == null) return { now, schedule: null }
+  if (lat == null || lng == null) return { now, schedule: null, methodId, asrId }
 
   if (remote?.times) {
-    return { now, schedule: getScheduleFromCached(remote, now) }
+    return { now, schedule: getScheduleFromCached(remote, now), methodId, asrId }
   }
 
-  return { now, schedule: getSchedule(lat, lng, now) }
+  return { now, schedule: getSchedule(lat, lng, now, methodId, asrId), methodId, asrId }
 }
 
 function getScheduleFromCached(cached, now) {

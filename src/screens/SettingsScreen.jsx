@@ -1,5 +1,7 @@
 import { Moon, Sun, Volume2, VolumeX } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { PrayerCalcSettings } from '../components/PrayerCalcSettings'
+import { ReminderSettings } from '../components/ReminderSettings'
 import { langs } from '../i18n/langs'
 import { useLocale } from '../i18n/LocaleContext'
 import { useSkin } from '../hooks/useSkin'
@@ -18,6 +20,9 @@ export function SettingsScreen() {
         <h2 className="font-display text-2xl text-[var(--text)]">{t('tabs.settings')}</h2>
         <p className="mt-1 text-xs text-[var(--muted)]">{t('settings.hint')}</p>
       </div>
+
+      <PrayerCalcSettings />
+      <ReminderSettings />
 
       <section className="glass rounded-3xl p-4">
         <h3 className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--muted)]">

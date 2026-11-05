@@ -1,7 +1,8 @@
 import { AzkarPanel } from '../components/AzkarPanel'
 import { IslamicCalendar } from '../components/IslamicCalendar'
 import { PrayerWidget } from '../components/PrayerWidget'
-import { ReminderToggle } from '../components/ReminderToggle'
+import { QiblaCompass } from '../components/QiblaCompass'
+import { TahajjudCard } from '../components/TahajjudCard'
 import { useLocale } from '../i18n/LocaleContext'
 
 export function PrayerScreen() {
@@ -14,7 +15,8 @@ export function PrayerScreen() {
         <p className="mt-1 text-xs text-[var(--muted)]">{t('prayer.screenHint')}</p>
       </div>
       <PrayerWidget />
-      <ReminderToggle />
+      <QiblaCompass />
+      <TahajjudCard />
       <AzkarPanel />
       <IslamicCalendar />
     </div>

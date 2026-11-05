@@ -6,17 +6,34 @@ export function toArabicIndic(value) {
 }
 
 /**
- * Madani ayah-end ligature: ARABIC END OF AYAH (U+06DD) + Arabic-Indic digits.
- * With Quran2013 / Uthmanic Hafs the digits render inside the circular ornament.
+ * Plain-text ornate ayah end for copy/share: ﴿١٢﴾
+ * Prefer CSS component `<AyahEnd />` in the UI — avoids empty U+06DD circles.
  */
 export function ayahEndMark(number) {
-  return `\u06DD${toArabicIndic(number)}`
+  const digits = toArabicIndic(number)
+  return `\uFD3F${digits}\uFD3E`
 }
 
-/** Strip trailing ayah markers / ornate parens / digits, then append proper end mark */
+/**
+ * Strip every common end-of-ayah / digit / ornate marker so we never stack
+ * an empty Madani circle (U+06DD) next to a numbered one.
+ */
+export function stripAyahEnd(text) {
+  let next = String(text || '')
+  // Remove ALL U+06DD occurrences (alone or with digits) — empty circle culprit
+  next = next.replace(/\u06DD+/g, '')
+  next = next.replace(/[\uFD3F﴾]\s*[\u0660-\u0669٠-٩0-9]*\s*[\uFD3E﴿]?/g, '')
+  next = next.replace(/[\uFD3E\uFD3F﴾﴿]/g, '')
+  // Trailing verse digits (API leftovers after marker removal)
+  next = next.replace(/(?:[\s\u200b\u200c\u200d\u200e\u200f\uFEFF]*)[\u0660-\u0669٠-٩0-9]+$/u, '')
+  // Collapse spaces / bidi controls
+  next = next.replace(/[\u200b\u200c\u200d\u200e\u200f\uFEFF]/g, '')
+  return next.replace(/\s+/g, ' ').trim()
+}
+
+/** Append a single ornate ayah-end mark (string form — for copy) */
 export function withAyahEnd(text, number) {
-  const cleaned = String(text || '')
-    .replace(/[\u06DD\uFD3E\uFD3F﴾﴿٠-٩0-9\s]+$/gu, '')
-    .trim()
+  const cleaned = stripAyahEnd(text)
+  if (!cleaned) return ayahEndMark(number)
   return `${cleaned} ${ayahEndMark(number)}`
 }

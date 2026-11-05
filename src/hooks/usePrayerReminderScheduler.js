@@ -56,7 +56,7 @@ export function usePrayerReminderScheduler() {
       try {
         const timings = await fetchTimings(local.lat, local.lng)
         if (!timings) return
-        const offset = Number(local.offsetMinutes) || 15
+        const offset = Number.isFinite(Number(local.offsetMinutes)) ? Number(local.offsetMinutes) : 0
         const now = Date.now()
         const day = new Date().toISOString().slice(0, 10)
         const sent = readSent()

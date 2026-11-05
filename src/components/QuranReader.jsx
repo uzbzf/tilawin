@@ -27,7 +27,8 @@ import {
 import { searchSurahs, surahs } from '../data/surahs'
 import { useSound } from '../hooks/useSound'
 import { useLocale } from '../i18n/LocaleContext'
-import { withAyahEnd } from '../lib/ayahMark'
+import { ArabicWithAyahEnd } from './AyahEnd'
+import { SurahBanner } from './SurahBanner'
 import {
   audioUrlForAyah,
   fetchPage,
@@ -35,6 +36,7 @@ import {
   parseAyahRef,
   TRANSLATIONS,
 } from '../lib/quranApi'
+import { RECITERS, readReciter, reciterLabel, writeReciter } from '../lib/reciters'
 import {
   blobUrlForPage,
   clearMushafCache,
@@ -87,12 +89,14 @@ export function QuranReader() {
   const [error, setError] = useState('')
   const [showTranslation, setShowTranslation] = useState(true)
   const [fullscreen, setFullscreen] = useState(false)
+  const [mushafFullscreen, setMushafFullscreen] = useState(false)
   const [focusAyah, setFocusAyah] = useState(null)
   const [playing, setPlaying] = useState(null)
   const [downloadOpen, setDownloadOpen] = useState(false)
   const [downloadProgress, setDownloadProgress] = useState(null)
   const [cachedCount, setCachedCount] = useState(0)
   const [pageInput, setPageInput] = useState('1')
+  const [reciterId, setReciterId] = useState(() => readReciter())
   const audioRef = useRef(null)
   const listRef = useRef(null)
   const mushafUrlRef = useRef('')
@@ -133,6 +137,10 @@ export function QuranReader() {
   }, [mushafOpen, fullscreen])
 
   useEffect(() => {
+    if (!mushafOpen) setMushafFullscreen(false)
+  }, [mushafOpen])
+
+  useEffect(() => {
     if (!focusAyah || !ayahs.length) return undefined
     const id = window.setTimeout(() => {
       listRef.current?.querySelector(`[data-ayah="${focusAyah}"]`)?.scrollIntoView({
@@ -156,7 +164,7 @@ export function QuranReader() {
     setPlaying(null)
   }
 
-  const playAyah = (globalNumber) => {
+  const playAyah = (globalNumber, meta = {}) => {
     if (!globalNumber) return
     click()
     if (playing === globalNumber) {
@@ -164,11 +172,24 @@ export function QuranReader() {
       return
     }
     stopAudio()
-    const audio = new Audio(audioUrlForAyah(globalNumber))
+    const audio = new Audio(
+      audioUrlForAyah(globalNumber, {
+        surah: meta.surah || activeSurah,
+        ayah: meta.ayah || meta.number,
+        reciterId,
+      }),
+    )
     audioRef.current = audio
     setPlaying(globalNumber)
     audio.play().catch(() => setPlaying(null))
     audio.onended = () => setPlaying(null)
+  }
+
+  const onReciterChange = (id) => {
+    click()
+    writeReciter(id)
+    setReciterId(id)
+    stopAudio()
   }
 
   const openSurah = async (surah, jumpAyah = null) => {
@@ -269,6 +290,7 @@ export function QuranReader() {
     click()
     setMode('surah')
     setFullscreen(false)
+    setMushafFullscreen(false)
     setDownloadOpen(false)
   }
 
@@ -337,8 +359,8 @@ export function QuranReader() {
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[100] flex flex-col"
       style={{
-        paddingTop: 'max(0.5rem, env(safe-area-inset-top))',
-        paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
+        paddingTop: mushafFullscreen ? 0 : 'max(0.5rem, env(safe-area-inset-top))',
+        paddingBottom: mushafFullscreen ? 0 : 'max(0.5rem, env(safe-area-inset-bottom))',
       }}
       role="dialog"
       aria-modal="true"
@@ -346,74 +368,108 @@ export function QuranReader() {
     >
       {/* Opaque blocker — no pass-through to site behind */}
       <div className="absolute inset-0 bg-[#0a0908]" aria-hidden />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(232,200,140,0.12),transparent_55%)]" />
+      {!mushafFullscreen && (
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(232,200,140,0.12),transparent_55%)]" />
+      )}
 
-      <div className="relative z-10 mx-auto flex h-full w-full max-w-lg flex-col px-3">
-        <div className="glass mb-2 flex flex-wrap items-center gap-2 rounded-2xl p-2">
-          <button
-            type="button"
-            onClick={closeMushaf}
-            className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-xs text-[var(--text)]"
-          >
-            <X size={14} />
-            {t('quran.back')}
-          </button>
-          <form
-            className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-1"
-            onSubmit={(event) => {
-              event.preventDefault()
-              goPage(Number(pageInput) || 1)
-            }}
-          >
-            <span className="text-[10px] text-[var(--muted)]">{t('quran.page')}</span>
-            <input
-              value={pageInput}
-              onChange={(event) => setPageInput(event.target.value.replace(/[^\d]/g, ''))}
-              className="w-12 bg-transparent text-center text-xs text-[var(--text)] outline-none"
-              inputMode="numeric"
-            />
-            <span className="text-[10px] text-[var(--muted)]">/604</span>
-          </form>
-          <select
-            value={juzFromPage(pageNo)}
-            onChange={(event) => goPage(JUZ_START_PAGE[Number(event.target.value) - 1] || 1)}
-            className="rounded-full bg-white/10 px-2 py-1.5 text-[11px] text-[var(--text)]"
-          >
-            {JUZ_START_PAGE.map((_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {t('quran.juz')} {i + 1}
-              </option>
-            ))}
-          </select>
-          <select
-            value={surahFromPage(pageNo)}
-            onChange={(event) => goPage(SURAH_START_PAGE[Number(event.target.value) - 1] || 1)}
-            className="max-w-[8.5rem] truncate rounded-full bg-white/10 px-2 py-1.5 text-[11px] text-[var(--text)]"
-          >
-            {surahs.map((s) => (
-              <option key={s.n} value={s.n}>
-                {s.n}. {titleForSurah(s, lang)}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={() => {
-              click()
-              setDownloadOpen(true)
-            }}
-            className="inline-flex items-center gap-1 rounded-full bg-gold/25 px-3 py-1.5 text-xs text-[var(--text)]"
-          >
-            <Download size={12} />
-            {t('quran.downloadShort')}
-          </button>
-        </div>
+      <div
+        className={`relative z-10 mx-auto flex h-full w-full flex-col ${
+          mushafFullscreen ? 'max-w-none px-0' : 'max-w-lg px-3'
+        }`}
+      >
+        {!mushafFullscreen && (
+          <div className="glass-strong mb-2 flex flex-wrap items-center gap-2 rounded-2xl p-2">
+            <button
+              type="button"
+              onClick={closeMushaf}
+              className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-xs text-[var(--text)]"
+            >
+              <X size={14} />
+              {t('quran.back')}
+            </button>
+            <form
+              className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-1"
+              onSubmit={(event) => {
+                event.preventDefault()
+                goPage(Number(pageInput) || 1)
+              }}
+            >
+              <span className="text-[10px] text-[var(--muted)]">{t('quran.page')}</span>
+              <input
+                value={pageInput}
+                onChange={(event) => setPageInput(event.target.value.replace(/[^\d]/g, ''))}
+                className="w-12 bg-transparent text-center text-xs text-[var(--text)] outline-none"
+                inputMode="numeric"
+              />
+              <span className="text-[10px] text-[var(--muted)]">/604</span>
+            </form>
+            <select
+              value={juzFromPage(pageNo)}
+              onChange={(event) => goPage(JUZ_START_PAGE[Number(event.target.value) - 1] || 1)}
+              className="rounded-full bg-white/10 px-2 py-1.5 text-[11px] text-[var(--text)]"
+            >
+              {JUZ_START_PAGE.map((_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {t('quran.juz')} {i + 1}
+                </option>
+              ))}
+            </select>
+            <select
+              value={surahFromPage(pageNo)}
+              onChange={(event) => goPage(SURAH_START_PAGE[Number(event.target.value) - 1] || 1)}
+              className="max-w-[8.5rem] truncate rounded-full bg-white/10 px-2 py-1.5 text-[11px] text-[var(--text)]"
+            >
+              {surahs.map((s) => (
+                <option key={s.n} value={s.n}>
+                  {s.n}. {titleForSurah(s, lang)}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => {
+                click()
+                setDownloadOpen(true)
+              }}
+              className="inline-flex items-center gap-1 rounded-full bg-gold/25 px-3 py-1.5 text-xs text-[var(--text)]"
+            >
+              <Download size={12} />
+              {t('quran.downloadShort')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                click()
+                setMushafFullscreen(true)
+              }}
+              className="ml-auto inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-xs text-[var(--text)]"
+            >
+              <Maximize2 size={12} />
+              {t('quran.fullscreen')}
+            </button>
+          </div>
+        )}
 
         <div
-          className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl bg-[#f3ead6] shadow-[0_0_0_1px_rgba(0,0,0,0.2)]"
+          className={`relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#f3ead6] ${
+            mushafFullscreen ? 'rounded-none' : 'rounded-3xl shadow-[0_0_0_1px_rgba(0,0,0,0.2)]'
+          }`}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
+          {mushafFullscreen && (
+            <button
+              type="button"
+              onClick={() => {
+                click()
+                setMushafFullscreen(false)
+              }}
+              className="absolute top-2 right-2 z-20 inline-flex items-center gap-1 rounded-full bg-black/45 px-3 py-1.5 text-[11px] text-white backdrop-blur-md"
+            >
+              <Minimize2 size={12} />
+              {t('quran.exitFullscreen')}
+            </button>
+          )}
           <AnimatePresence mode="wait">
             <motion.div
               key={pageNo}
@@ -423,71 +479,90 @@ export function QuranReader() {
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               className="flex min-h-0 flex-1 flex-col"
             >
-              <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-2">
+              <div
+                className={`flex min-h-0 flex-1 items-center justify-center overflow-auto ${
+                  mushafFullscreen ? 'p-0' : 'p-2'
+                }`}
+              >
                 {loading && <p className="text-sm text-[#6b6458]">{t('quran.loading')}</p>}
                 {!loading && mushafSrc && (
                   <img
                     src={mushafSrc}
                     alt={`${t('quran.madani')} ${pageNo}`}
-                    className="max-h-full w-full object-contain select-none"
+                    className={`w-full select-none ${
+                      mushafFullscreen ? 'h-full max-h-none object-contain' : 'max-h-full object-contain'
+                    }`}
                     draggable={false}
                   />
                 )}
                 {!loading && !mushafSrc && pageAyahs.length > 0 && (
-                  <div className="w-full space-y-2 px-3 py-4 text-center" dir="rtl">
+                  <div className="w-full space-y-3 px-3 py-4 text-center" dir="rtl">
+                    {(() => {
+                      const firstSurah = pageAyahs[0]?.surah
+                      const surahMeta = surahs.find((s) => s.n === firstSurah)
+                      return surahMeta ? (
+                        <div className="mb-3">
+                          <SurahBanner
+                            arabic={`سُورَةُ ${surahMeta.ar}`}
+                            subtitle={titleForSurah(surahMeta, lang)}
+                          />
+                        </div>
+                      ) : null
+                    })()}
                     {pageAyahs.map((ayah) => (
                       <p
                         key={ayah.global}
                         className="font-quran text-[1.4rem] leading-[2.15] text-[#1a1712]"
                       >
-                        {withAyahEnd(ayah.arabic, ayah.number)}
+                        <ArabicWithAyahEnd text={ayah.arabic} number={ayah.number} />
                       </p>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* Madani-style footer / колонтитул */}
-              <div
-                className="shrink-0 border-t border-[#d4c4a4]/80 bg-[#efe4cc] px-3 py-2 text-center"
-                dir="rtl"
-              >
-                <p className="font-quran text-[13px] leading-snug text-[#3a3226]">{footer.lineAr}</p>
-                <p className="mt-0.5 text-[10px] tracking-wide text-[#6b5f4c]">
-                  {t('quran.page')} {pageNo} / 604 · {t('quran.juz')} {footer.juz} · {t('quran.hizb')}{' '}
-                  {footer.hizb}
-                </p>
-              </div>
+              {!mushafFullscreen && (
+                <div
+                  className="shrink-0 border-t border-[#d4c4a4]/80 bg-[#efe4cc] px-3 py-2 text-center"
+                  dir="rtl"
+                >
+                  <p className="font-quran text-[13px] leading-snug text-[#3a3226]">{footer.lineAr}</p>
+                  <p className="mt-0.5 text-[10px] tracking-wide text-[#6b5f4c]">
+                    {t('quran.page')} {pageNo} / 604 · {t('quran.juz')} {footer.juz} · {t('quran.hizb')}{' '}
+                    {footer.hizb}
+                  </p>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
 
-        <div className="mt-2 flex items-center justify-between gap-3 pb-1">
-          <button
-            type="button"
-            disabled={loading || pageNo <= 1}
-            onClick={() => goPage(pageNo - 1)}
-            className="glass flex h-11 w-11 items-center justify-center rounded-full text-[var(--text)] disabled:opacity-40"
-            aria-label={t('prev')}
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <p className="text-center text-xs text-[var(--muted)]">
-            {footer.surahName}
-            <span className="mt-0.5 block tabular-nums">
-              {pageNo} / 604
-            </span>
-          </p>
-          <button
-            type="button"
-            disabled={loading || pageNo >= 604}
-            onClick={() => goPage(pageNo + 1)}
-            className="glass flex h-11 w-11 items-center justify-center rounded-full text-[var(--text)] disabled:opacity-40"
-            aria-label={t('next')}
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
+        {!mushafFullscreen && (
+          <div className="mt-2 flex items-center justify-between gap-3 pb-1">
+            <button
+              type="button"
+              disabled={loading || pageNo <= 1}
+              onClick={() => goPage(pageNo - 1)}
+              className="glass-strong flex h-11 w-11 items-center justify-center rounded-full text-[var(--text)] disabled:opacity-40"
+              aria-label={t('prev')}
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <p className="text-center text-xs text-[var(--muted)]">
+              {footer.surahName}
+              <span className="mt-0.5 block tabular-nums">{pageNo} / 604</span>
+            </p>
+            <button
+              type="button"
+              disabled={loading || pageNo >= 604}
+              onClick={() => goPage(pageNo + 1)}
+              className="glass-strong flex h-11 w-11 items-center justify-center rounded-full text-[var(--text)] disabled:opacity-40"
+              aria-label={t('next')}
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        )}
         {error && <p className="pb-2 text-center text-xs text-rose-400">{error}</p>}
       </div>
     </motion.div>
@@ -572,12 +647,16 @@ export function QuranReader() {
                     <span>
                       {ayah.surahEn || ayah.surah} · {ayah.surah}:{ayah.number}
                     </span>
-                    <button type="button" onClick={() => playAyah(ayah.global)} className="rounded-full bg-gold/15 p-1.5 text-gold">
+                    <button
+                      type="button"
+                      onClick={() => playAyah(ayah.global, { surah: ayah.surah, ayah: ayah.number })}
+                      className="rounded-full bg-gold/15 p-1.5 text-gold"
+                    >
                       {playing === ayah.global ? <Pause size={12} /> : <Play size={12} />}
                     </button>
                   </div>
                   <p className="font-quran text-[1.5rem] leading-[2.05] break-words text-[var(--text)]" dir="rtl">
-                    {withAyahEnd(ayah.arabic, ayah.number)}
+                    <ArabicWithAyahEnd text={ayah.arabic} number={ayah.number} />
                   </p>
                 </article>
               ))}
@@ -610,7 +689,7 @@ export function QuranReader() {
               />
             </label>
             <p className="mt-1.5 text-[10px] text-[var(--muted)]">{t('quran.searchHint')}</p>
-            <ul className="mt-3 max-h-80 space-y-1 overflow-y-auto">
+            <ul className="mt-3 max-h-[min(70vh,36rem)] space-y-1 overflow-y-auto">
               {results.map((surah) => (
                 <li key={surah.n}>
                   <button
@@ -695,6 +774,20 @@ export function QuranReader() {
                   </button>
                 ))}
               </div>
+              <label className="inline-flex min-w-0 items-center gap-1 rounded-full bg-white/5 px-2 py-1 text-[10px] text-[var(--muted)]">
+                <span className="shrink-0">{t('quran.reciter')}</span>
+                <select
+                  value={reciterId}
+                  onChange={(event) => onReciterChange(event.target.value)}
+                  className="max-w-[9.5rem] truncate bg-transparent text-[11px] text-[var(--text)] outline-none"
+                >
+                  {RECITERS.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {reciterLabel(r.id, lang)}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <button
                 type="button"
                 onClick={() => {
@@ -707,13 +800,12 @@ export function QuranReader() {
               </button>
             </div>
 
-            <div className="mb-3 text-center">
-              <p className="font-quran text-2xl text-[var(--text)]" dir="rtl">
-                {meta?.name || ''}
-              </p>
-              <p className="mt-1 text-xs text-[var(--muted)]">
-                {meta?.englishName} · {t('quran.madani')} · {TRANSLATIONS[trLang]?.label}
-              </p>
+            <div className="mb-4 flex flex-col items-center text-center">
+              <SurahBanner
+                arabic={meta?.name || ''}
+                subtitle={`${meta?.englishName || ''} · ${t('quran.madani')}`}
+              />
+              <p className="mt-2 text-[10px] text-[var(--muted)]">{TRANSLATIONS[trLang]?.label}</p>
             </div>
 
             {loading && <p className="py-8 text-center text-sm text-[var(--muted)]">{t('quran.loading')}</p>}
@@ -729,15 +821,19 @@ export function QuranReader() {
                   }`}
                 >
                   <div className="mb-2 flex items-center justify-between text-[10px] text-[var(--muted)]">
-                    <span className="font-quran text-sm text-gold" dir="rtl">
-                      {withAyahEnd('', ayah.number).trim()}
+                    <span className="rounded-full bg-gold/15 px-2 py-0.5 tabular-nums text-gold">
+                      {activeSurah}:{ayah.number}
                     </span>
-                    <button type="button" onClick={() => playAyah(ayah.global)} className="rounded-full bg-gold/15 p-1.5 text-gold">
+                    <button
+                      type="button"
+                      onClick={() => playAyah(ayah.global, { surah: activeSurah, ayah: ayah.number })}
+                      className="rounded-full bg-gold/15 p-1.5 text-gold"
+                    >
                       {playing === ayah.global ? <Pause size={12} /> : <Play size={12} />}
                     </button>
                   </div>
                   <p className="font-quran text-[1.55rem] leading-[2.1] break-words text-[var(--text)]" dir="rtl">
-                    {withAyahEnd(ayah.arabic, ayah.number)}
+                    <ArabicWithAyahEnd text={ayah.arabic} number={ayah.number} />
                   </p>
                   {showTranslation && ayah.translation && (
                     <p className="mt-2 text-sm leading-relaxed break-words text-[var(--muted)]">
@@ -790,7 +886,7 @@ export function QuranReader() {
                           className="rounded-2xl border border-[var(--glass-border)] bg-white/5 px-3 py-3"
                         >
                           <p className="font-quran text-[1.55rem] leading-[2.1] break-words text-[var(--text)]" dir="rtl">
-                            {withAyahEnd(ayah.arabic, ayah.number)}
+                            <ArabicWithAyahEnd text={ayah.arabic} number={ayah.number} />
                           </p>
                           {showTranslation && ayah.translation && (
                             <p className="mt-2 text-sm text-[var(--muted)]">{ayah.translation}</p>
@@ -817,7 +913,7 @@ export function QuranReader() {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 24, opacity: 0 }}
                     onClick={(event) => event.stopPropagation()}
-                    className="glass w-full max-w-md rounded-3xl p-5"
+                    className="glass-strong w-full max-w-md rounded-3xl p-5"
                   >
                     <h4 className="font-display text-xl text-[var(--text)]">{t('quran.downloadTitle')}</h4>
                     <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{t('quran.downloadHint')}</p>

@@ -1,0 +1,194 @@
+import { Bell, BellOff, BookOpen, ExternalLink, LoaderCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useGeolocation } from '../hooks/useGeolocation'
+import { useSound } from '../hooks/useSound'
+import { useTelegram } from '../hooks/useTelegram'
+import { useLocale } from '../i18n/LocaleContext'
+import { readReminderLocal, setPrayerReminder } from '../lib/remindersApi'
+import { getWebApp } from '../lib/telegram'
+
+export function ReminderSettings() {
+  const { t } = useLocale()
+  const { click } = useSound()
+  const { user, haptic, isTelegram } = useTelegram()
+  const geo = useGeolocation()
+  const local = readReminderLocal()
+  const [enabled, setEnabled] = useState(() => Boolean(local.enabled))
+  const [fridayKahf, setFridayKahf] = useState(() => Boolean(local.fridayKahf))
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState('')
+  const [needStart, setNeedStart] = useState(false)
+  const [botLink, setBotLink] = useState('https://t.me/tilawin_bot')
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/bot')
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled && data?.link) setBotLink(data.link)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const openBot = () => {
+    try {
+      getWebApp()?.openTelegramLink?.(botLink)
+    } catch {
+      window.open(botLink, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  const save = async ({ nextEnabled = enabled, nextFriday = fridayKahf }) => {
+    if (nextEnabled && !user?.id) {
+      setMessage(t('reminders.needTelegram'))
+      return
+    }
+
+    setBusy(true)
+    setMessage('')
+    setNeedStart(false)
+    haptic('medium')
+
+    try {
+      const result = await setPrayerReminder({
+        enabled: nextEnabled,
+        fridayKahf: nextFriday,
+        userId: user?.id,
+        initData: getWebApp()?.initData || '',
+        lat: geo.lat,
+        lng: geo.lng,
+        city: geo.label,
+        offsetMinutes: 0,
+      })
+      setEnabled(nextEnabled)
+      setFridayKahf(nextFriday)
+
+      if (result.needStart) {
+        setNeedStart(true)
+        setMessage(t('reminders.needStart'))
+      } else if (result.offline) {
+        setMessage(t('reminders.savedLocal'))
+      } else if (nextEnabled) {
+        setMessage(t('reminders.onAtTime'))
+      } else {
+        setMessage(t('reminders.off'))
+      }
+
+      if (!isTelegram && nextEnabled) setMessage(t('reminders.needTelegram'))
+    } catch {
+      setMessage(t('reminders.error'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const togglePrayer = async () => {
+    click()
+    await save({ nextEnabled: !enabled, nextFriday: fridayKahf })
+  }
+
+  const toggleFriday = async () => {
+    click()
+    const next = !fridayKahf
+    // Friday Kahf requires prayer reminders account; enable both if turning on
+    await save({ nextEnabled: next ? true : enabled, nextFriday: next })
+  }
+
+  return (
+    <section className="glass overflow-hidden rounded-3xl p-4" aria-label={t('reminders.title')}>
+      <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--muted)]">
+        {t('reminders.section')}
+      </h3>
+
+      <button
+        type="button"
+        onClick={togglePrayer}
+        disabled={busy || !geo.lat}
+        className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition ${
+          enabled
+            ? 'border-emerald/40 bg-emerald/10'
+            : 'border-[var(--glass-border)] bg-white/5 hover:bg-white/10'
+        } disabled:opacity-60`}
+      >
+        <span
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
+            enabled ? 'bg-emerald/20 text-emerald' : 'bg-gold/10 text-gold'
+          }`}
+        >
+          {busy ? (
+            <LoaderCircle size={18} className="animate-spin" />
+          ) : enabled ? (
+            <Bell size={18} />
+          ) : (
+            <BellOff size={18} />
+          )}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-medium leading-snug break-words text-[var(--text)]">
+            {t('reminders.titleAtTime')}
+          </span>
+          <span className="mt-0.5 block text-[11px] leading-snug break-words text-[var(--muted)]">
+            {t('reminders.hintAtTime')}
+          </span>
+        </span>
+        <span
+          className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+            enabled ? 'bg-emerald/50' : 'bg-white/10'
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition ${
+              enabled ? 'left-5' : 'left-0.5'
+            }`}
+          />
+        </span>
+      </button>
+
+      <button
+        type="button"
+        onClick={toggleFriday}
+        disabled={busy || !geo.lat}
+        className={`mt-2 flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition ${
+          fridayKahf
+            ? 'border-gold/40 bg-gold/10'
+            : 'border-[var(--glass-border)] bg-white/5 hover:bg-white/10'
+        } disabled:opacity-60`}
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gold/10 text-gold">
+          <BookOpen size={18} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-medium text-[var(--text)]">{t('reminders.fridayTitle')}</span>
+          <span className="mt-0.5 block text-[11px] text-[var(--muted)]">{t('reminders.fridayHint')}</span>
+        </span>
+        <span
+          className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+            fridayKahf ? 'bg-gold/50' : 'bg-white/10'
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition ${
+              fridayKahf ? 'left-5' : 'left-0.5'
+            }`}
+          />
+        </span>
+      </button>
+
+      {message && <p className="mt-2 px-1 text-[11px] leading-snug break-words text-[var(--muted)]">{message}</p>}
+
+      {needStart && (
+        <button
+          type="button"
+          onClick={openBot}
+          className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gold/15 px-3 py-1.5 text-xs text-[var(--text)]"
+        >
+          <ExternalLink size={13} />
+          {t('reminders.openBot')}
+        </button>
+      )}
+    </section>
+  )
+}

@@ -128,7 +128,7 @@ function normalize(value) {
 
 export function searchSurahs(query) {
   const q = normalize(query)
-  if (!q) return surahs.slice(0, 12)
+  if (!q) return surahs
 
   const asNum = Number(q)
   if (Number.isInteger(asNum) && asNum >= 1 && asNum <= 114) {
@@ -149,5 +149,4 @@ export function searchSurahs(query) {
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score || a.s.n - b.s.n)
     .map((item) => item.s)
-    .slice(0, 24)
 }

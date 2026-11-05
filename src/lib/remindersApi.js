@@ -1,7 +1,6 @@
 const KEY = 'tilawin-reminders'
 
 function apiBase() {
-  // Empty = same origin (Vercel /api). Set VITE_API_URL only for a separate server.
   const raw = import.meta.env.VITE_API_URL
   if (raw == null || raw === '') return ''
   return String(raw).replace(/\/$/, '')
@@ -23,7 +22,16 @@ export function writeReminderLocal(value) {
   }
 }
 
-export async function setPrayerReminder({ enabled, userId, initData, lat, lng, city, offsetMinutes = 15 }) {
+export async function setPrayerReminder({
+  enabled,
+  userId,
+  initData,
+  lat,
+  lng,
+  city,
+  offsetMinutes = 0,
+  fridayKahf = false,
+}) {
   const payload = {
     enabled: Boolean(enabled),
     userId,
@@ -31,12 +39,14 @@ export async function setPrayerReminder({ enabled, userId, initData, lat, lng, c
     lat,
     lng,
     city: city || '',
-    offsetMinutes,
+    offsetMinutes: Number(offsetMinutes) || 0,
+    fridayKahf: Boolean(fridayKahf),
   }
 
   writeReminderLocal({
     enabled: payload.enabled,
-    offsetMinutes,
+    offsetMinutes: payload.offsetMinutes,
+    fridayKahf: payload.fridayKahf,
     city: payload.city,
     lat,
     lng,
@@ -57,7 +67,6 @@ export async function setPrayerReminder({ enabled, userId, initData, lat, lng, c
 
     return response.json()
   } catch (error) {
-    // Local vite has no /api — keep optimistic local save.
     if (!import.meta.env.PROD) {
       return { ok: true, offline: true, ...payload }
     }

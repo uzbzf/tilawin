@@ -31,7 +31,8 @@ export default async function handler(req, res) {
       lat: Number(body.lat),
       lng: Number(body.lng),
       city: body.city || '',
-      offsetMinutes: Number(body.offsetMinutes) || 15,
+      offsetMinutes: Number.isFinite(Number(body.offsetMinutes)) ? Number(body.offsetMinutes) : 0,
+      fridayKahf: Boolean(body.fridayKahf),
       userId: String(userId),
       updatedAt: Date.now(),
     }
@@ -56,6 +57,7 @@ export default async function handler(req, res) {
               nextTime: next?.time,
               city: reminder.city,
               minutes: reminder.offsetMinutes,
+              fridayKahf: reminder.fridayKahf,
             }),
             parse_mode: 'HTML',
             disable_web_page_preview: true,

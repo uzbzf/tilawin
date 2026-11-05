@@ -1,4 +1,4 @@
-import { formatReminderMessage } from './bot.js'
+import { formatFridayKahfMessage, formatReminderMessage } from './bot.js'
 import { listEnabledReminders } from './store.js'
 
 const PRAYER_ORDER = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
@@ -36,13 +36,23 @@ export function startReminderCron(bot, { intervalMs = 60_000 } = {}) {
 
     const now = new Date()
     const day = now.toISOString().slice(0, 10)
+    const isFriday = now.getDay() === 5
 
     await Promise.all(
       users.map(async (user) => {
         try {
+          if (user.fridayKahf && isFriday) {
+            const kahfKey = cacheKey(user.userId, 'kahf', day)
+            const hour = now.getHours()
+            if (!sentCache.has(kahfKey) && hour >= 7 && hour <= 11) {
+              sentCache.set(kahfKey, Date.now())
+              await bot.sendMessage(user.userId, formatFridayKahfMessage())
+            }
+          }
+
           const timings = await fetchSchedule(user.lat, user.lng)
           if (!timings) return
-          const offset = Number(user.offsetMinutes) || 15
+          const offset = Number(user.offsetMinutes) || 0
 
           for (const prayer of PRAYER_ORDER) {
             const stamp = timings[prayer]

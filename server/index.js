@@ -142,12 +142,15 @@ const server = createServer(async (req, res) => {
     }
 
     try {
+      const offsetMinutes = Number.isFinite(Number(body.offsetMinutes)) ? Number(body.offsetMinutes) : 0
+      const fridayKahf = Boolean(body.fridayKahf)
       const saved = await upsertReminder(userId, {
         enabled: Boolean(body.enabled),
         lat: Number(body.lat),
         lng: Number(body.lng),
         city: body.city || '',
-        offsetMinutes: Number(body.offsetMinutes) || 15,
+        offsetMinutes,
+        fridayKahf,
         initData: body.initData || '',
       })
 
@@ -163,10 +166,15 @@ const server = createServer(async (req, res) => {
         }
 
         if (bot) {
+          const when =
+            offsetMinutes > 0
+              ? `Я буду мягко напоминать за <b>${offsetMinutes} минут</b> до каждого намаза.`
+              : 'Я буду уведомлять, когда <b>наступит время намаза</b>.'
           const text = [
             '✅ <b>Напоминания включены</b>',
             '',
-            `Я буду мягко напоминать за <b>${Number(body.offsetMinutes) || 15} минут</b> до каждого намаза.`,
+            when,
+            fridayKahf ? '📖 По пятницам — напоминание прочесть суру <b>Аль-Кахф</b>.' : '',
             next ? `Следующий: <b>${next.name}</b> · <b>${next.time}</b>${body.city ? ` · ${body.city}` : ''}` : '',
             '',
             'Важно: хотя бы раз нажми /start у бота, чтобы сообщения доходили.',

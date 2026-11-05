@@ -1,3 +1,6 @@
+import { stripAyahEnd } from './ayahMark'
+import { getReciter, readReciter } from './reciters'
+
 const surahCache = new Map()
 const pageCache = new Map()
 
@@ -36,7 +39,7 @@ export async function fetchSurah(surahNumber, translationLang = 'ru') {
   const ayahs = (uthmani?.ayahs || []).map((ayah, index) => ({
     number: ayah.numberInSurah,
     global: ayah.number,
-    arabic: ayah.text,
+    arabic: stripAyahEnd(ayah.text),
     translation: translated?.ayahs?.[index]?.text || '',
     juz: ayah.juz,
     page: ayah.page,
@@ -68,7 +71,7 @@ export async function fetchPage(pageNumber) {
   const ayahs = (data?.ayahs || []).map((ayah) => ({
     number: ayah.numberInSurah,
     global: ayah.number,
-    arabic: ayah.text,
+    arabic: stripAyahEnd(ayah.text),
     surah: ayah.surah?.number,
     surahName: ayah.surah?.name,
     surahEn: ayah.surah?.englishName,
@@ -86,7 +89,23 @@ export async function fetchPage(pageNumber) {
   return result
 }
 
-/** Mishary Alafasy CDN by global ayah number */
-export function audioUrlForAyah(globalNumber) {
+/**
+ * Per-ayah audio.
+ * Prefer everyayah folders; fall back to islamic.network by global number.
+ * @param {number} globalNumber
+ * @param {{ surah?: number, ayah?: number, reciterId?: string }} opts
+ */
+export function audioUrlForAyah(globalNumber, opts = {}) {
+  const reciter = getReciter(opts.reciterId || readReciter())
+  const surah = Number(opts.surah)
+  const ayah = Number(opts.ayah)
+  if (reciter.folder && Number.isFinite(surah) && Number.isFinite(ayah) && surah > 0 && ayah > 0) {
+    const s = String(surah).padStart(3, '0')
+    const a = String(ayah).padStart(3, '0')
+    return `https://everyayah.com/data/${reciter.folder}/${s}${a}.mp3`
+  }
+  if (reciter.islamic && globalNumber) {
+    return `https://cdn.islamic.network/quran/audio/128/${reciter.islamic}/${globalNumber}.mp3`
+  }
   return `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNumber}.mp3`
 }

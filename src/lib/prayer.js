@@ -1,4 +1,5 @@
 import { CalculationMethod, Coordinates, Madhab, PrayerTimes } from 'adhan'
+import { getAladhanParams, readAsrMadhab, readCalcMethod } from './prayerSettings'
 
 /** Five fard prayers — used for «next prayer» countdown */
 export const PRAYER_ORDER = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']
@@ -26,10 +27,38 @@ const ALADHAN_KEYS = {
   lastthird: 'Lastthird',
 }
 
-function params() {
-  const next = CalculationMethod.MuslimWorldLeague()
-  next.madhab = Madhab.Hanafi
+function adhanParams(methodId = readCalcMethod(), asrId = readAsrMadhab()) {
+  let next
+  switch (methodId) {
+    case 'isna':
+      next = CalculationMethod.NorthAmerica()
+      break
+    case 'egypt':
+      next = CalculationMethod.Egyptian()
+      break
+    case 'makkah':
+      next = CalculationMethod.UmmAlQura()
+      break
+    case 'fixedIsha': {
+      next = CalculationMethod.Other()
+      next.fajrAngle = 18
+      next.ishaInterval = 90
+      break
+    }
+    case 'mwl':
+    default:
+      next = CalculationMethod.MuslimWorldLeague()
+      break
+  }
+  next.madhab = asrId === 'hanafi' ? Madhab.Hanafi : Madhab.Shafi
   return next
+}
+
+function aladhanQuery(stamp, lat, lng, methodId, asrId) {
+  const { method, school, fixedIsha } = getAladhanParams(methodId, asrId)
+  let url = `https://api.aladhan.com/v1/timings/${stamp}?latitude=${lat}&longitude=${lng}&method=${method}&school=${school}`
+  if (fixedIsha) url += '&tune=0,0,0,0,0,0,0,0,0'
+  return url
 }
 
 function tahajjudFromNight(maghrib, fajr) {
@@ -38,9 +67,14 @@ function tahajjudFromNight(maghrib, fajr) {
   return new Date(fajr.getTime() - night / 3)
 }
 
-export function getPrayerTimes(lat, lng, date = new Date()) {
+export function getPrayerTimes(lat, lng, date = new Date(), methodId, asrId) {
   const coordinates = new Coordinates(lat, lng)
-  return new PrayerTimes(coordinates, date, params())
+  return new PrayerTimes(coordinates, date, adhanParams(methodId, asrId))
+}
+
+/** Last third of the night: Maghrib → next Fajr */
+export function calcTahajjud(maghrib, fajr) {
+  return tahajjudFromNight(maghrib, fajr)
 }
 
 export function formatClock(date, timeZone) {
@@ -135,11 +169,11 @@ function buildSchedule(times, now, extra = {}) {
   }
 }
 
-function localDayTimes(lat, lng, now) {
-  const today = getPrayerTimes(lat, lng, now)
+function localDayTimes(lat, lng, now, methodId, asrId) {
+  const today = getPrayerTimes(lat, lng, now, methodId, asrId)
   const tomorrow = new Date(now)
   tomorrow.setDate(tomorrow.getDate() + 1)
-  const nextFajr = getPrayerTimes(lat, lng, tomorrow).fajr
+  const nextFajr = getPrayerTimes(lat, lng, tomorrow, methodId, asrId).fajr
 
   return {
     tahajjud: tahajjudFromNight(today.maghrib, nextFajr),
@@ -152,8 +186,10 @@ function localDayTimes(lat, lng, now) {
   }
 }
 
-export function getSchedule(lat, lng, now = new Date()) {
-  const times = localDayTimes(lat, lng, now)
+export function getSchedule(lat, lng, now = new Date(), methodId, asrId) {
+  const method = methodId || readCalcMethod()
+  const asr = asrId || readAsrMadhab()
+  const times = localDayTimes(lat, lng, now, method, asr)
   const fard = Object.fromEntries(PRAYER_ORDER.map((name) => [name, times[name]]))
   const extra = {}
 
@@ -161,22 +197,26 @@ export function getSchedule(lat, lng, now = new Date()) {
     const yesterday = new Date(now)
     yesterday.setDate(yesterday.getDate() - 1)
     extra.previousName = 'isha'
-    extra.previousTime = getPrayerTimes(lat, lng, yesterday).isha
+    extra.previousTime = getPrayerTimes(lat, lng, yesterday, method, asr).isha
   }
 
   if (fard.isha <= now) {
     const tomorrow = new Date(now)
     tomorrow.setDate(tomorrow.getDate() + 1)
-    extra.tomorrowFajr = getPrayerTimes(lat, lng, tomorrow).fajr
+    extra.tomorrowFajr = getPrayerTimes(lat, lng, tomorrow, method, asr).fajr
   }
 
   extra.source = 'local'
+  extra.methodId = method
+  extra.asrId = asr
   return buildSchedule({ ...times, ...fard }, now, extra)
 }
 
-export async function fetchSchedule(lat, lng, now = new Date()) {
+export async function fetchSchedule(lat, lng, now = new Date(), methodId, asrId) {
+  const method = methodId || readCalcMethod()
+  const asr = asrId || readAsrMadhab()
   const stamp = Math.floor(now.getTime() / 1000)
-  const url = `https://api.aladhan.com/v1/timings/${stamp}?latitude=${lat}&longitude=${lng}&method=3&school=1`
+  const url = aladhanQuery(stamp, lat, lng, method, asr)
   const res = await fetch(url)
   if (!res.ok) throw new Error('aladhan failed')
   const json = await res.json()
@@ -192,14 +232,17 @@ export async function fetchSchedule(lat, lng, now = new Date()) {
     isha: parseHHmm(raw[ALADHAN_KEYS.isha], timeZone, now),
   }
 
+  // Fixed Isha: force Maghrib + 90 minutes when API method does not apply it
+  if (method === 'fixedIsha') {
+    times.isha = new Date(times.maghrib.getTime() + 90 * 60_000)
+  }
+
   if (raw.Lastthird) {
     times.tahajjud = parseHHmm(raw.Lastthird, timeZone, now)
   } else {
     const tomorrow = new Date(now.getTime() + 86400000)
     const tStamp = stamp + 24 * 60 * 60
-    const tRes = await fetch(
-      `https://api.aladhan.com/v1/timings/${tStamp}?latitude=${lat}&longitude=${lng}&method=3&school=1`,
-    )
+    const tRes = await fetch(aladhanQuery(tStamp, lat, lng, method, asr))
     if (tRes.ok) {
       const tJson = await tRes.json()
       const nextFajr = parseHHmm(tJson.data.timings.Fajr, tJson.data.meta.timezone, tomorrow)
@@ -209,29 +252,34 @@ export async function fetchSchedule(lat, lng, now = new Date()) {
     }
   }
 
-  const extra = { timeZone, source: 'aladhan' }
+  const extra = { timeZone, source: 'aladhan', methodId: method, asrId: asr }
 
   if (times.fajr <= now) {
     const yStamp = stamp - 24 * 60 * 60
-    const yRes = await fetch(
-      `https://api.aladhan.com/v1/timings/${yStamp}?latitude=${lat}&longitude=${lng}&method=3&school=1`,
-    )
+    const yRes = await fetch(aladhanQuery(yStamp, lat, lng, method, asr))
     if (yRes.ok) {
       const yJson = await yRes.json()
       extra.previousName = 'isha'
-      extra.previousTime = parseHHmm(
+      let prevIsha = parseHHmm(
         yJson.data.timings.Isha,
         yJson.data.meta.timezone,
         new Date(now.getTime() - 86400000),
       )
+      if (method === 'fixedIsha') {
+        const prevMaghrib = parseHHmm(
+          yJson.data.timings.Maghrib,
+          yJson.data.meta.timezone,
+          new Date(now.getTime() - 86400000),
+        )
+        prevIsha = new Date(prevMaghrib.getTime() + 90 * 60_000)
+      }
+      extra.previousTime = prevIsha
     }
   }
 
   if (times.isha <= now) {
     const tStamp = stamp + 24 * 60 * 60
-    const tRes = await fetch(
-      `https://api.aladhan.com/v1/timings/${tStamp}?latitude=${lat}&longitude=${lng}&method=3&school=1`,
-    )
+    const tRes = await fetch(aladhanQuery(tStamp, lat, lng, method, asr))
     if (tRes.ok) {
       const tJson = await tRes.json()
       extra.tomorrowFajr = parseHHmm(
