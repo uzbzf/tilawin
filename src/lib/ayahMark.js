@@ -6,32 +6,29 @@ export function toArabicIndic(value) {
 }
 
 /**
- * Plain-text ornate ayah end for copy/share: ﴿١٢﴾
- * Prefer CSS component `<AyahEnd />` in the UI — avoids empty U+06DD circles.
+ * Plain-text ayah end for copy/share (no empty U+06DD).
  */
 export function ayahEndMark(number) {
-  const digits = toArabicIndic(number)
-  return `\uFD3F${digits}\uFD3E`
+  return toArabicIndic(number)
 }
 
 /**
- * Strip every common end-of-ayah / digit / ornate marker so we never stack
- * an empty Madani circle (U+06DD) next to a numbered one.
+ * Strip every end-of-ayah / ornate / trailing digit marker so we never
+ * stack an empty Madani circle next to our mark.
  */
 export function stripAyahEnd(text) {
   let next = String(text || '')
-  // Remove ALL U+06DD occurrences (alone or with digits) — empty circle culprit
+  // Empty / filled end-of-ayah (alone or with digits) — anywhere
   next = next.replace(/\u06DD+/g, '')
   next = next.replace(/[\uFD3F﴾]\s*[\u0660-\u0669٠-٩0-9]*\s*[\uFD3E﴿]?/g, '')
   next = next.replace(/[\uFD3E\uFD3F﴾﴿]/g, '')
-  // Trailing verse digits (API leftovers after marker removal)
+  // Trailing verse numbers left after marker strip
   next = next.replace(/(?:[\s\u200b\u200c\u200d\u200e\u200f\uFEFF]*)[\u0660-\u0669٠-٩0-9]+$/u, '')
-  // Collapse spaces / bidi controls
   next = next.replace(/[\u200b\u200c\u200d\u200e\u200f\uFEFF]/g, '')
   return next.replace(/\s+/g, ' ').trim()
 }
 
-/** Append a single ornate ayah-end mark (string form — for copy) */
+/** Append ayah number for plain-text copy */
 export function withAyahEnd(text, number) {
   const cleaned = stripAyahEnd(text)
   if (!cleaned) return ayahEndMark(number)

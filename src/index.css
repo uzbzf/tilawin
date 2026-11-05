@@ -132,25 +132,33 @@ html.dark .glass-strong {
 }
 
 /*
- * Madani ayah-end (۝ + digits) via Quran2013 — circle is the font glyph.
- * No CSS ring/fill so there is no double outline.
+ * Single ayah-end icon: one white ring + number (no U+06DD, no fill).
+ * Sans digits avoid Quran2013's second circled-glyph.
  */
 .ayah-end-mark {
-  display: inline;
-  margin-inline: 0.15em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15em;
+  height: 1.15em;
+  margin-inline: 0.2em;
   padding: 0;
-  border: 0 !important;
-  border-radius: 0 !important;
-  outline: none !important;
-  background: none !important;
+  vertical-align: middle;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  background: transparent !important;
   box-shadow: none !important;
+  outline: none !important;
   color: inherit;
-  font-family: var(--font-quran);
-  font-size: 1em;
-  font-weight: 400;
-  line-height: inherit;
-  vertical-align: baseline;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif !important;
+  font-size: 0.55em;
+  font-weight: 600;
+  line-height: 1;
   unicode-bidi: isolate;
+}
+
+.ayah-end-mark:empty {
+  display: none;
 }
 
 .ayah-end-mark:empty::after {
