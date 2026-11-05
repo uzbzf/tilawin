@@ -3,11 +3,15 @@ import { useState } from 'react'
 import { Background } from './components/Background'
 import { InstallBanner } from './components/InstallBanner'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
+import { SkinPicker } from './components/SkinPicker'
 import { SoundToggle } from './components/SoundToggle'
 import { TabBar } from './components/TabBar'
+import { TapRipple } from './components/TapRipple'
 import { TelegramMainButton } from './components/TelegramMainButton'
 import { ThemeToggle } from './components/ThemeToggle'
 import { usePrayerReminderScheduler } from './hooks/usePrayerReminderScheduler'
+import { SkinProvider } from './hooks/useSkin'
+import { useSound } from './hooks/useSound'
 import { TelegramProvider, useTelegram } from './hooks/useTelegram'
 import { useTheme } from './hooks/useTheme'
 import { useLocale } from './i18n/LocaleContext'
@@ -28,6 +32,7 @@ const screens = {
 function AppShell({ theme, toggle }) {
   const { t } = useLocale()
   const { isTelegram } = useTelegram()
+  const { page } = useSound()
   const [tab, setTab] = useState('home')
   const Screen = screens[tab] || HomeScreen
   usePrayerReminderScheduler()
@@ -35,9 +40,11 @@ function AppShell({ theme, toggle }) {
   return (
     <div className="relative min-h-svh">
       <Background />
+      <TapRipple />
 
       <div className="fixed top-[max(0.85rem,calc(env(safe-area-inset-top)+var(--tg-content-top,0px)+0.25rem))] right-[max(0.85rem,calc(env(safe-area-inset-right)+0.35rem))] z-20 flex items-center gap-2">
         <LanguageSwitcher />
+        <SkinPicker />
         <SoundToggle onLabel={t('soundOn')} offLabel={t('soundOff')} />
         <ThemeToggle theme={theme} onToggle={toggle} lightLabel={t('themeLight')} darkLabel={t('themeDark')} />
       </div>
@@ -52,17 +59,23 @@ function AppShell({ theme, toggle }) {
         <AnimatePresence mode="wait">
           <motion.div
             key={tab}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
             <Screen />
           </motion.div>
         </AnimatePresence>
       </div>
 
-      <TabBar active={tab} onChange={setTab} />
+      <TabBar
+        active={tab}
+        onChange={(next) => {
+          page()
+          setTab(next)
+        }}
+      />
       {!isTelegram && <InstallBanner />}
       <TelegramMainButton />
     </div>
@@ -70,11 +83,13 @@ function AppShell({ theme, toggle }) {
 }
 
 export default function App() {
-  const { theme, toggle } = useTheme()
+  const { theme, toggle, isDark } = useTheme()
 
   return (
     <TelegramProvider theme={theme}>
-      <AppShell theme={theme} toggle={toggle} />
+      <SkinProvider isDark={isDark}>
+        <AppShell theme={theme} toggle={toggle} />
+      </SkinProvider>
     </TelegramProvider>
   )
 }

@@ -41,5 +41,5 @@ export function useTheme() {
     setTheme((current) => (current === 'dark' ? 'light' : 'dark'))
   }, [])
 
-  return { theme, toggle, isDark: theme === 'dark' }
+  return { theme, setTheme, toggle, isDark: theme === 'dark' }
 }

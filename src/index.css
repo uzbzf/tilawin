@@ -22,6 +22,7 @@
   --orb-gold: rgba(214, 186, 140, 0.55);
   --orb-emerald: rgba(168, 186, 176, 0.4);
   --orb-warm: rgba(232, 200, 160, 0.45);
+  --skin-overlay: linear-gradient(160deg, rgba(232, 210, 170, 0.45), rgba(244, 239, 230, 0.2) 45%, rgba(200, 186, 160, 0.28));
   --tg-safe-top: 0px;
   --tg-safe-bottom: 0px;
   --tg-safe-left: 0px;

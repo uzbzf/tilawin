@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { getTelegramUser, langFromTelegram } from '../lib/telegram'
+import { getLangMeta } from './langs'
 import { translations } from './translations'
 
 const KEY = 'tilawin-lang'
@@ -14,6 +15,9 @@ function readLang() {
   }
   const fromTelegram = langFromTelegram(getTelegramUser())
   if (fromTelegram && translations[fromTelegram]) return fromTelegram
+  // map common Telegram codes
+  const map = { uz: 'ru', uk: 'ru', tr: 'en' }
+  if (fromTelegram && map[fromTelegram] && translations[map[fromTelegram]]) return map[fromTelegram]
   return 'ru'
 }
 
@@ -30,7 +34,9 @@ export function LocaleProvider({ children }) {
     } catch {
       /* ignore */
     }
-    document.documentElement.lang = lang === 'uz' ? 'uz' : lang
+    const meta = getLangMeta(lang)
+    document.documentElement.lang = lang
+    document.documentElement.dir = meta.dir || 'ltr'
   }, [lang])
 
   const setLang = useCallback((next) => {
@@ -46,7 +52,19 @@ export function LocaleProvider({ children }) {
     [lang],
   )
 
-  const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t])
+  const labelFor = useCallback(
+    (item) => {
+      if (!item) return ''
+      if (typeof item === 'string') return item
+      return item[lang] || item.ru || item.en || item.ar || ''
+    },
+    [lang],
+  )
+
+  const value = useMemo(
+    () => ({ lang, setLang, t, labelFor, dir: getLangMeta(lang).dir || 'ltr' }),
+    [lang, setLang, t, labelFor],
+  )
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
 }

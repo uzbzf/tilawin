@@ -1,3 +1,5 @@
+import { AzkarPanel } from '../components/AzkarPanel'
+import { IslamicCalendar } from '../components/IslamicCalendar'
 import { PrayerWidget } from '../components/PrayerWidget'
 import { ReminderToggle } from '../components/ReminderToggle'
 import { useLocale } from '../i18n/LocaleContext'
@@ -13,6 +15,8 @@ export function PrayerScreen() {
       </div>
       <PrayerWidget />
       <ReminderToggle />
+      <AzkarPanel />
+      <IslamicCalendar />
     </div>
   )
 }

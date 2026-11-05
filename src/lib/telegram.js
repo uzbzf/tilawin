@@ -31,9 +31,14 @@ export function displayName(user) {
 
 export function langFromTelegram(user) {
   const code = (user?.language_code || '').toLowerCase()
-  if (code.startsWith('uz')) return 'uz'
+  if (code.startsWith('ar')) return 'ar'
   if (code.startsWith('en')) return 'en'
   if (code.startsWith('ru')) return 'ru'
+  if (code.startsWith('kk')) return 'kk'
+  if (code.startsWith('ky')) return 'ky'
+  if (code.startsWith('tg')) return 'tg'
+  if (code.startsWith('tt')) return 'tt'
+  if (code.startsWith('ce')) return 'ce'
   return null
 }
 

@@ -44,13 +44,13 @@ export function usePrayerTimes(lat, lng) {
 
 function getScheduleFromCached(cached, now) {
   const times = cached.times
-  let nextName = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'].find((name) => times[name] > now)
+  const order = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']
+  let nextName = order.find((name) => times[name] > now)
   let nextTime = nextName ? times[nextName] : cached.nextTime
   let previousName = cached.previousName
   let previousTime = cached.previousTime
 
   if (nextName) {
-    const order = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']
     const index = order.indexOf(nextName)
     nextTime = times[nextName]
     if (index === 0) {

@@ -37,11 +37,10 @@ function makeStars(count) {
   return Array.from({ length: count }, (_, i) => ({
     id: i,
     left: `${(i * 37) % 100}%`,
+    top: `${(i * 17) % 92}%`,
     delay: (i % 12) * 0.55,
-    duration: 7 + (i % 8) * 1.1,
     size: 1 + (i % 3),
-    drift: ((i * 13) % 40) - 20,
-    twinkle: 1.6 + (i % 5) * 0.35,
+    twinkle: 1.8 + (i % 5) * 0.4,
   }))
 }
 
@@ -49,12 +48,13 @@ export function Background() {
   const { x, y, scroll } = useMouseParallax()
   const sx = x * 18
   const sy = y * 14 + scroll * 0.06
-  const falling = useMemo(() => makeStars(16), [])
-  const twinkles = useMemo(() => makeStars(28), [])
+  const twinkles = useMemo(() => makeStars(32), [])
 
   return (
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden>
       <div className="absolute inset-0 bg-[var(--bg)]" />
+      <div className="absolute inset-0 opacity-90" style={{ background: 'var(--skin-overlay)' }} />
+
       {orbs.map((orb, i) => (
         <motion.div
           key={i}
@@ -68,46 +68,23 @@ export function Background() {
         />
       ))}
 
-      {/* Soft twinkles — visible in light & dark */}
       <div className="absolute inset-0">
         {twinkles.map((star) => (
           <motion.span
             key={`tw-${star.id}`}
             className="absolute rounded-full bg-gold/70 dark:bg-white"
             style={{
-              top: `${(star.id * 17) % 92}%`,
+              top: star.top,
               left: star.left,
               width: star.size,
               height: star.size,
               boxShadow: '0 0 6px rgba(212,175,110,0.45)',
             }}
-            animate={{ opacity: [0.08, 0.55, 0.12], scale: [0.75, 1.25, 0.8] }}
-            transition={{ duration: star.twinkle, repeat: Infinity, ease: 'easeInOut', delay: star.delay }}
-          />
-        ))}
-
-        {falling.map((star) => (
-          <motion.span
-            key={`fall-${star.id}`}
-            className="absolute bg-gradient-to-b from-gold/80 to-transparent dark:from-white/90"
-            style={{
-              left: star.left,
-              width: star.size + 0.5,
-              height: star.size * 10,
-              borderRadius: 999,
-              boxShadow: '0 0 8px rgba(212,175,110,0.35)',
-              rotate: '18deg',
-            }}
-            initial={{ top: '-8%', opacity: 0 }}
-            animate={{
-              top: ['-8%', '110%'],
-              x: [0, star.drift],
-              opacity: [0, 0.7, 0.7, 0],
-            }}
+            animate={{ opacity: [0.1, 0.75, 0.15], scale: [0.8, 1.35, 0.85] }}
             transition={{
-              duration: star.duration,
+              duration: star.twinkle,
               repeat: Infinity,
-              ease: 'linear',
+              ease: 'easeInOut',
               delay: star.delay,
             }}
           />

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { cities } from '../data/cities'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { usePrayerTimes } from '../hooks/usePrayerTimes'
-import { formatClock, formatCountdown, PRAYER_ORDER } from '../lib/prayer'
+import { DISPLAY_ORDER, formatClock, formatCountdown } from '../lib/prayer'
 import { useSound } from '../hooks/useSound'
 import { useLocale } from '../i18n/LocaleContext'
 
@@ -28,11 +28,11 @@ export function PrayerWidget() {
       aria-label={t('prayer.next')}
     >
       <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--muted)]">
             {t('prayer.next')}
           </p>
-          <h2 className="mt-1 font-display text-3xl font-medium text-[var(--text)]">{nextLabel}</h2>
+          <h2 className="mt-1 truncate font-display text-3xl font-medium text-[var(--text)]">{nextLabel}</h2>
         </div>
         <button
           type="button"
@@ -156,17 +156,27 @@ export function PrayerWidget() {
               exit={{ height: 0, opacity: 0 }}
               className="space-y-1 overflow-hidden"
             >
-              {PRAYER_ORDER.map((name) => (
-                <li
-                  key={name}
-                  className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
-                    name === schedule.nextName ? 'bg-gold/10 text-gold' : 'text-[var(--muted)]'
-                  }`}
-                >
-                  <span>{t(`prayer.names.${name}`)}</span>
-                  <span className="tabular-nums">{formatClock(schedule.times[name], schedule.timeZone)}</span>
-                </li>
-              ))}
+              {DISPLAY_ORDER.map((name) => {
+                const stamp = schedule.times[name]
+                if (!stamp) return null
+                const isNext = name === schedule.nextName
+                const isExtra = name === 'sunrise' || name === 'tahajjud'
+                return (
+                  <li
+                    key={name}
+                    className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
+                      isNext
+                        ? 'bg-gold/10 text-gold'
+                        : isExtra
+                          ? 'text-[var(--muted)]/90'
+                          : 'text-[var(--muted)]'
+                    }`}
+                  >
+                    <span>{t(`prayer.names.${name}`)}</span>
+                    <span className="tabular-nums">{formatClock(stamp, schedule.timeZone)}</span>
+                  </li>
+                )
+              })}
             </motion.ul>
           )}
         </AnimatePresence>

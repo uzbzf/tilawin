@@ -33,6 +33,7 @@ export function TabBar({ active, onChange }) {
                 click()
                 onChange(tab.id)
               }}
+              data-tap
               className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-2 transition ${
                 selected ? 'text-[var(--text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
               }`}

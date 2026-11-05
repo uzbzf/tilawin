@@ -59,6 +59,10 @@ export function SoundProvider({ children }) {
       tasbeeh: () => playSound('tasbeeh'),
       flip: () => playSound('flip'),
       hover: () => playSound('hover'),
+      chime: () => playSound('chime'),
+      success: () => playSound('success'),
+      whoosh: () => playSound('whoosh'),
+      page: () => playSound('page'),
     }),
     [enabled, play, toggle],
   )
