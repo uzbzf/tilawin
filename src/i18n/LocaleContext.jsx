@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { getTelegramUser, langFromTelegram } from '../lib/telegram'
 import { translations } from './translations'
 
 const KEY = 'tilawin-lang'
@@ -11,6 +12,8 @@ function readLang() {
   } catch {
     /* ignore */
   }
+  const fromTelegram = langFromTelegram(getTelegramUser())
+  if (fromTelegram && translations[fromTelegram]) return fromTelegram
   return 'ru'
 }
 

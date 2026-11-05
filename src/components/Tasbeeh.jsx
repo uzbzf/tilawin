@@ -2,6 +2,7 @@ import { RotateCcw } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useSound } from '../hooks/useSound'
+import { useTelegram } from '../hooks/useTelegram'
 import { useLocale } from '../i18n/LocaleContext'
 import { dhikrs } from '../i18n/translations'
 
@@ -20,6 +21,7 @@ function readState() {
 export function Tasbeeh() {
   const { lang, t } = useLocale()
   const { click, tasbeeh } = useSound()
+  const { haptic } = useTelegram()
   const [index, setIndex] = useState(() => readState().index)
   const [count, setCount] = useState(() => readState().count)
   const [flash, setFlash] = useState(0)
@@ -35,6 +37,7 @@ export function Tasbeeh() {
 
   const tap = () => {
     tasbeeh()
+    haptic('soft')
     setFlash((n) => n + 1)
     setCount((n) => {
       const next = n + 1

@@ -1,3 +1,5 @@
+export { verses } from '../data/verses'
+
 export const translations = {
   ru: {
     tagline: 'Чтение Корана. Спокойно, чисто, каждый день.',
@@ -11,6 +13,14 @@ export const translations = {
     soundOn: 'Включить звук',
     soundOff: 'Выключить звук',
     at: 'в',
+    tabs: {
+      label: 'Разделы',
+      home: 'Хаб',
+      prayer: 'Намаз',
+      verses: 'Аяты',
+      habits: 'Привычки',
+      media: 'Медиа',
+    },
     contact: {
       label: 'Есть вопрос?',
       hint: 'Написать в Telegram',
@@ -25,26 +35,60 @@ export const translations = {
       chooseCity: 'Выбрать город',
       otherCity: 'Другой город',
       today: 'Сегодняшние времена',
+      screenHint: 'Геолокация, расписание и напоминания',
       names: { fajr: 'Фаджр', dhuhr: 'Зухр', asr: 'Аср', maghrib: 'Магриб', isha: 'Иша' },
+    },
+    reminders: {
+      title: 'Напоминать за 15 минут до намаза',
+      hint: 'Уведомление придёт в Telegram-боте',
+      on: 'Напоминания включены',
+      off: 'Напоминания выключены',
+      savedLocal: 'Сохранено локально. Подключите API бота для пушей.',
+      needTelegram: 'Откройте Mini App в Telegram, чтобы получать пуши.',
+      error: 'Не удалось сохранить напоминание',
     },
     mood: {
       title: 'Аят под настроение',
       hint: 'Выберите состояние — карточка перевернётся',
+      screenHint: 'Дуа, поиск и аяты по настроению',
+      search: 'Поиск по словам…',
       copy: 'Скопировать',
       share: 'Поделиться',
       copied: 'Скопировано',
       back: 'К настроениям',
       moods: {
-        calm: { label: 'Тревожно', sub: 'спокойствие' },
+        calm: { label: 'Тревожно', sub: 'нужен покой' },
         hope: { label: 'Грустно', sub: 'надежда' },
         gratitude: { label: 'Благодарность', sub: 'шукр' },
-        inspire: { label: 'Вдохновение', sub: 'поиск смысла' },
+        inspire: { label: 'Мотивация', sub: 'ищу вдохновение' },
       },
     },
     tasbeeh: {
       title: 'Тасбих',
       reset: 'Сброс',
       of: 'из',
+    },
+    habits: {
+      title: 'Трекер добрых дел',
+      hint: 'Отмечайте день и копите серию',
+      screenHint: 'Зикр и ежедневные благие привычки',
+      today: 'сегодня',
+      streak: 'дней',
+      items: {
+        fajr: 'Фаджр вовремя',
+        quran: 'Прочитать Коран',
+        dhikr: 'Утренний / вечерний зикр',
+        sadaqa: 'Садака / доброе дело',
+        salawat: 'Салават на Пророка ﷺ',
+      },
+    },
+    wallpapers: {
+      title: 'Обои',
+      hint: 'Скачать PNG',
+      download: 'Скачать',
+    },
+    media: {
+      screenHint: 'Каллиграфия и последние чтения',
     },
     gallery: {
       title: 'Последние чтения',
@@ -56,6 +100,10 @@ export const translations = {
       hint: 'Откроется как отдельное приложение, без браузера',
       later: 'Позже',
       ios: 'Нажмите «Поделиться», затем «На экран Домой»',
+    },
+    telegram: {
+      greeting: 'Ассаламу алейкум, {name}',
+      openChannel: 'Открыть канал',
     },
   },
   uz: {
@@ -70,6 +118,14 @@ export const translations = {
     soundOn: 'Ovozni yoqish',
     soundOff: 'Ovozni o‘chirish',
     at: 'soat',
+    tabs: {
+      label: 'Bo‘limlar',
+      home: 'Hub',
+      prayer: 'Namoz',
+      verses: 'Oyatlar',
+      habits: 'Odatlar',
+      media: 'Media',
+    },
     contact: {
       label: 'Savol bormi?',
       hint: 'Telegramda yozish',
@@ -84,26 +140,60 @@ export const translations = {
       chooseCity: 'Shaharni tanlash',
       otherCity: 'Boshqa shahar',
       today: 'Bugungi vaqtlar',
+      screenHint: 'Joylashuv, jadval va eslatmalar',
       names: { fajr: 'Bomdod', dhuhr: 'Peshin', asr: 'Asr', maghrib: 'Shom', isha: 'Xufton' },
+    },
+    reminders: {
+      title: 'Namozdan 15 daqiqa oldin eslat',
+      hint: 'Bildirishnoma Telegram botdan keladi',
+      on: 'Eslatmalar yoqildi',
+      off: 'Eslatmalar o‘chirildi',
+      savedLocal: 'Mahalliy saqlandi. Push uchun bot API ulang.',
+      needTelegram: 'Push uchun Mini Appni Telegramda oching.',
+      error: 'Eslatmani saqlab bo‘lmadi',
     },
     mood: {
       title: 'Kayfiyat oyati',
       hint: 'Holatni tanlang — karta ag‘dariladi',
+      screenHint: 'Duo, qidiruv va kayfiyat oyatlar',
+      search: 'Kalit so‘z bo‘yicha qidirish…',
       copy: 'Nusxa',
       share: 'Ulashish',
       copied: 'Nusxa olindi',
       back: 'Kayfiyatlarga',
       moods: {
-        calm: { label: 'Tashvish', sub: 'tinchlik' },
+        calm: { label: 'Tashvish', sub: 'tinchlik kerak' },
         hope: { label: 'G‘amgin', sub: 'umid' },
         gratitude: { label: 'Shukr', sub: 'minnatdorlik' },
-        inspire: { label: 'Ilhom', sub: 'ma’no izlash' },
+        inspire: { label: 'Motivatsiya', sub: 'ilhom izlash' },
       },
     },
     tasbeeh: {
       title: 'Tasbeh',
       reset: 'Tozalash',
       of: '/',
+    },
+    habits: {
+      title: 'Yaxshi amallar trekkeri',
+      hint: 'Kunni belgilang va seriyani saqlang',
+      screenHint: 'Zikr va kundalik yaxshi odatlar',
+      today: 'bugun',
+      streak: 'kun',
+      items: {
+        fajr: 'Bomdod o‘z vaqtida',
+        quran: 'Qur’on o‘qish',
+        dhikr: 'Ertalabki / kechki zikr',
+        sadaqa: 'Sadaqa / yaxshi ish',
+        salawat: 'Payg‘ambarga ﷺ salovat',
+      },
+    },
+    wallpapers: {
+      title: 'Fon rasmlar',
+      hint: 'PNG yuklab olish',
+      download: 'Yuklab olish',
+    },
+    media: {
+      screenHint: 'Kalligrafiya va so‘nggi tilovatlar',
     },
     gallery: {
       title: 'So‘nggi tilovatlar',
@@ -115,6 +205,10 @@ export const translations = {
       hint: 'Brauzersiz, alohida ilova sifatida ochiladi',
       later: 'Keyinroq',
       ios: '«Ulashish» ni bosing, so‘ng «Home ekraniga»',
+    },
+    telegram: {
+      greeting: 'Assalomu alaykum, {name}',
+      openChannel: 'Kanalni ochish',
     },
   },
   en: {
@@ -129,6 +223,14 @@ export const translations = {
     soundOn: 'Turn sound on',
     soundOff: 'Turn sound off',
     at: 'at',
+    tabs: {
+      label: 'Sections',
+      home: 'Hub',
+      prayer: 'Prayer',
+      verses: 'Verses',
+      habits: 'Habits',
+      media: 'Media',
+    },
     contact: {
       label: 'Have a question?',
       hint: 'Message on Telegram',
@@ -143,26 +245,60 @@ export const translations = {
       chooseCity: 'Choose city',
       otherCity: 'Another city',
       today: 'Today’s times',
+      screenHint: 'Location, schedule and reminders',
       names: { fajr: 'Fajr', dhuhr: 'Dhuhr', asr: 'Asr', maghrib: 'Maghrib', isha: 'Isha' },
+    },
+    reminders: {
+      title: 'Remind me 15 minutes before prayer',
+      hint: 'Notification will come from the Telegram bot',
+      on: 'Reminders enabled',
+      off: 'Reminders disabled',
+      savedLocal: 'Saved locally. Connect the bot API for pushes.',
+      needTelegram: 'Open the Mini App in Telegram to receive pushes.',
+      error: 'Could not save reminder',
     },
     mood: {
       title: 'A verse for your mood',
       hint: 'Pick a feeling — the card will flip',
+      screenHint: 'Dua, search and mood verses',
+      search: 'Search by keywords…',
       copy: 'Copy',
       share: 'Share',
       copied: 'Copied',
       back: 'All moods',
       moods: {
-        calm: { label: 'Anxious', sub: 'calm' },
+        calm: { label: 'Anxious', sub: 'need calm' },
         hope: { label: 'Sad', sub: 'hope' },
         gratitude: { label: 'Grateful', sub: 'thanks' },
-        inspire: { label: 'Seeking', sub: 'inspiration' },
+        inspire: { label: 'Motivation', sub: 'seeking inspiration' },
       },
     },
     tasbeeh: {
       title: 'Tasbeeh',
       reset: 'Reset',
       of: 'of',
+    },
+    habits: {
+      title: 'Good deeds tracker',
+      hint: 'Check the day and keep your streak',
+      screenHint: 'Dhikr and daily good habits',
+      today: 'today',
+      streak: 'days',
+      items: {
+        fajr: 'Fajr on time',
+        quran: 'Read Quran',
+        dhikr: 'Morning / evening dhikr',
+        sadaqa: 'Charity / kind deed',
+        salawat: 'Salawat upon the Prophet ﷺ',
+      },
+    },
+    wallpapers: {
+      title: 'Wallpapers',
+      hint: 'Download PNG',
+      download: 'Download',
+    },
+    media: {
+      screenHint: 'Calligraphy and latest recitations',
     },
     gallery: {
       title: 'Latest recitations',
@@ -175,48 +311,9 @@ export const translations = {
       later: 'Later',
       ios: 'Tap Share, then Add to Home Screen',
     },
-  },
-}
-
-export const verses = {
-  calm: {
-    arabic: 'أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ',
-    ref: '13:28',
-    surah: { ru: 'Ар-Ра‘д', uz: 'Ar-Ra’d', en: 'Ar-Ra’d' },
-    text: {
-      ru: 'Воистину, в поминании Аллаха обретают покой сердца.',
-      uz: 'Albatta, Allohni zikr qilish bilan qalblar orom topadi.',
-      en: 'Surely in the remembrance of Allah do hearts find rest.',
-    },
-  },
-  hope: {
-    arabic: 'فَإِنَّ مَعَ الْعُسْرِ يُسْرًا',
-    ref: '94:5',
-    surah: { ru: 'Аш-Шарх', uz: 'Ash-Sharh', en: 'Ash-Sharh' },
-    text: {
-      ru: 'Воистину, за трудностью следует лёгкость.',
-      uz: 'Albatta, har qiyinchilik bilan birga osonlik ham bordir.',
-      en: 'For indeed, with hardship comes ease.',
-    },
-  },
-  gratitude: {
-    arabic: 'لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ',
-    ref: '14:7',
-    surah: { ru: 'Ибрахим', uz: 'Ibrohim', en: 'Ibrahim' },
-    text: {
-      ru: 'Если вы будете благодарны, Я непременно умножу вам.',
-      uz: 'Agar shukr qilsangiz, albatta (ne’matni) ziyoda qilaman.',
-      en: 'If you are grateful, I will surely increase you [in favor].',
-    },
-  },
-  inspire: {
-    arabic: 'وَإِلَىٰ رَبِّكَ فَارْغَبْ',
-    ref: '94:8',
-    surah: { ru: 'Аш-Шарх', uz: 'Ash-Sharh', en: 'Ash-Sharh' },
-    text: {
-      ru: 'И к Господу своему устремись.',
-      uz: 'Va Rabbiga intil.',
-      en: 'And to your Lord direct your longing.',
+    telegram: {
+      greeting: 'Assalamu alaikum, {name}',
+      openChannel: 'Open channel',
     },
   },
 }

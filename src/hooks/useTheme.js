@@ -1,13 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
+import { getWebApp, isTelegramWebApp } from '../lib/telegram'
 
 const KEY = 'tilawin-theme'
 
 function readTheme() {
   try {
-    return localStorage.getItem(KEY) === 'light' ? 'light' : 'dark'
+    const saved = localStorage.getItem(KEY)
+    if (saved === 'light' || saved === 'dark') return saved
   } catch {
-    return 'dark'
+    /* ignore */
   }
+  try {
+    if (isTelegramWebApp() && getWebApp().colorScheme === 'light') return 'light'
+  } catch {
+    /* ignore */
+  }
+  return 'dark'
 }
 
 function applyTheme(theme) {

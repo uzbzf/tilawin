@@ -22,6 +22,12 @@
   --orb-gold: rgba(214, 186, 140, 0.55);
   --orb-emerald: rgba(168, 186, 176, 0.4);
   --orb-warm: rgba(232, 200, 160, 0.45);
+  --tg-safe-top: 0px;
+  --tg-safe-bottom: 0px;
+  --tg-safe-left: 0px;
+  --tg-safe-right: 0px;
+  --tg-content-top: 0px;
+  --tg-content-bottom: 0px;
   color-scheme: light;
 }
 
@@ -64,6 +70,17 @@ body {
 
 html[data-install-banner] body {
   padding-bottom: 6.5rem;
+}
+
+html[data-telegram='1'] body {
+  overscroll-behavior-y: none;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+html[data-telegram='1'] #root {
+  min-height: 100svh;
+  min-height: var(--tg-viewport-stable-height, 100svh);
 }
 
 button,

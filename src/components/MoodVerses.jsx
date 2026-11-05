@@ -1,9 +1,9 @@
-import { Check, Copy, Heart, Share2, Sparkles, Sunrise, Wind } from 'lucide-react'
+import { Check, Copy, Heart, Search, Share2, Sparkles, Sunrise, Wind } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { searchVerses, verses } from '../data/verses'
 import { useSound } from '../hooks/useSound'
 import { useLocale } from '../i18n/LocaleContext'
-import { verses } from '../i18n/translations'
 
 const moods = [
   { id: 'calm', icon: Wind },
@@ -12,11 +12,14 @@ const moods = [
   { id: 'inspire', icon: Sparkles },
 ]
 
-export function MoodVerses() {
+export function MoodVerses({ showSearch = false }) {
   const { lang, t } = useLocale()
   const { click, flip, hover } = useSound()
   const [active, setActive] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [query, setQuery] = useState('')
+
+  const results = useMemo(() => (query.trim() ? searchVerses(query, lang) : []), [query, lang])
   const verse = active ? verses[active] : null
 
   const shareText = verse
@@ -53,12 +56,53 @@ export function MoodVerses() {
     }
   }
 
+  const selectVerse = (id) => {
+    flip()
+    setActive(id)
+  }
+
   return (
     <section className="glass rounded-3xl p-5" aria-label={t('mood.title')}>
       <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--muted)]">
         {t('mood.title')}
       </p>
       <p className="mt-1 text-xs text-[var(--muted)]">{t('mood.hint')}</p>
+
+      {showSearch && (
+        <label className="relative mt-4 block">
+          <Search size={15} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[var(--muted)]" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t('mood.search')}
+            className="w-full rounded-2xl border border-[var(--glass-border)] bg-white/5 py-2.5 pr-3 pl-9 text-sm text-[var(--text)] outline-none placeholder:text-[var(--muted)] focus:border-gold/40"
+          />
+        </label>
+      )}
+
+      {showSearch && results.length > 0 && (
+        <ul className="mt-2 max-h-36 space-y-1 overflow-y-auto rounded-2xl border border-[var(--glass-border)] bg-black/10 p-1.5">
+          {results.map((item) => (
+            <li key={item.id}>
+              <button
+                type="button"
+                onClick={() => {
+                  click()
+                  selectVerse(item.id)
+                  setQuery('')
+                }}
+                className="flex w-full flex-col rounded-xl px-3 py-2 text-left hover:bg-white/10"
+              >
+                <span className="text-xs text-[var(--muted)]">
+                  {item.surah[lang]} · {item.ref}
+                </span>
+                <span className="truncate text-sm text-[var(--text)]">{item.text[lang]}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div className="mt-4 grid grid-cols-2 gap-2">
         {moods.map((mood) => {
@@ -69,10 +113,7 @@ export function MoodVerses() {
               key={mood.id}
               type="button"
               onMouseEnter={hover}
-              onClick={() => {
-                flip()
-                setActive(mood.id)
-              }}
+              onClick={() => selectVerse(mood.id)}
               className={`flex items-center gap-2.5 rounded-2xl border px-3 py-3 text-left transition ${
                 selected
                   ? 'border-gold/40 bg-gold/15 ring-1 ring-gold/20'

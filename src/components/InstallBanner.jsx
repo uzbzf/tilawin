@@ -17,7 +17,7 @@ export function InstallBanner() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 24, opacity: 0 }}
           transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+          className="pointer-events-none fixed inset-x-0 bottom-[4.75rem] z-40 px-4 pb-[max(0.35rem,env(safe-area-inset-bottom))]"
         >
           <div className="pointer-events-auto glass-strong mx-auto flex max-w-md items-stretch gap-2 rounded-3xl p-2 pl-3 shadow-[0_12px_40px_var(--glow)]">
             <button
