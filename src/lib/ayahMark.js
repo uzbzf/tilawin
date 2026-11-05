@@ -6,10 +6,10 @@ export function toArabicIndic(value) {
 }
 
 /**
- * Plain-text ayah end for copy/share (no empty U+06DD).
+ * Plain-text ayah number for copy/share — never U+06DD / ornate glyphs.
  */
 export function ayahEndMark(number) {
-  return toArabicIndic(number)
+  return `(${toArabicIndic(number)})`
 }
 
 /**

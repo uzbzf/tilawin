@@ -131,38 +131,51 @@ html.dark .glass-strong {
   font-family: var(--font-quran);
 }
 
-/*
- * Single ayah-end icon: one white ring + number (no U+06DD, no fill).
- * Sans digits avoid Quran2013's second circled-glyph.
- */
-.ayah-end-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.15em;
-  height: 1.15em;
-  margin-inline: 0.2em;
-  padding: 0;
-  vertical-align: middle;
-  border: 1.5px solid currentColor;
-  border-radius: 999px;
-  background: transparent !important;
-  box-shadow: none !important;
-  outline: none !important;
-  color: inherit;
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif !important;
-  font-size: 0.55em;
-  font-weight: 600;
-  line-height: 1;
+/* SVG ayah-end mark — sized to Arabic line height, no Unicode glyphs */
+:root {
+  --ayah-mark-fill-a: rgba(255, 255, 255, 0.14);
+  --ayah-mark-fill-b: rgba(201, 168, 76, 0.08);
+  --ayah-mark-ring: rgba(255, 255, 255, 0.7);
+  --ayah-mark-inner: rgba(232, 200, 140, 0.38);
+  --ayah-mark-digit: rgba(247, 247, 248, 0.96);
+}
+
+html:not(.dark) {
+  --ayah-mark-fill-a: rgba(255, 255, 255, 0.55);
+  --ayah-mark-fill-b: rgba(201, 168, 76, 0.12);
+  --ayah-mark-ring: rgba(106, 84, 44, 0.55);
+  --ayah-mark-inner: rgba(138, 109, 59, 0.35);
+  --ayah-mark-digit: rgba(26, 23, 18, 0.92);
+}
+
+.arabic-with-ayah-end {
   unicode-bidi: isolate;
 }
 
-.ayah-end-mark:empty {
-  display: none;
+.ayah-end-mark {
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  margin-inline: 0.18em;
+  vertical-align: -0.12em;
+  overflow: visible;
+  flex-shrink: 0;
 }
 
-.ayah-end-mark:empty::after {
-  content: none;
+.ayah-end-mark__ring {
+  stroke: var(--ayah-mark-ring);
+}
+
+.ayah-end-mark__inner {
+  stroke: var(--ayah-mark-inner);
+}
+
+.ayah-end-mark__digit {
+  fill: var(--ayah-mark-digit);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 /* Decorative surah title frame */
