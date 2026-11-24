@@ -1,25 +1,28 @@
 import { ayahEndMark, stripAyahEnd } from '../lib/ayahMark'
 
 /**
- * Unicode Madani ayah-end: U+06DD + Arabic-Indic digits (Quran2013).
- * API markers are stripped first so only one mark remains.
+ * Madani ayah-end mark in Quran2013 (UthmanicHafs1Ver18):
+ * Arabic-Indic digits automatically render inside the ornamental ayah frame via GSUB rlig.
+ * Never include U+06DD so no duplicate empty ornament appears next to the number.
  */
 export function AyahEnd({ n, className = '' }) {
   if (n == null || n === '') return null
+  const mark = ayahEndMark(n)
+  if (!mark) return null
   return (
     <span className={`ayah-end-mark ${className}`.trim()} dir="rtl" aria-label={String(n)}>
-      {ayahEndMark(n)}
+      {mark}
     </span>
   )
 }
 
-/** Arabic text + one Unicode ayah-end mark. */
+/** Arabic text normalized for Madani Mushaf + one single ayah-end mark. */
 export function ArabicWithAyahEnd({ text, number, className = '' }) {
   const cleaned = stripAyahEnd(text)
   return (
     <span className={`arabic-with-ayah-end ${className}`.trim()} dir="rtl">
       {cleaned}
-      {cleaned ? ' ' : null}
+      {cleaned && number != null && number !== '' ? '\u00A0' : null}
       <AyahEnd n={number} />
     </span>
   )

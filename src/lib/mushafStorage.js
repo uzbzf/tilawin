@@ -1,4 +1,5 @@
 import { juzFromPage, SURAH_START_PAGE, surahFromPage } from '../data/juz'
+import { stripAyahEnd } from './ayahMark'
 import { getMushafMeta, putMushafMeta } from './mushafCache'
 import { getWebApp, isTelegramWebApp } from './telegram'
 
@@ -141,7 +142,7 @@ export function normalizeBookmark(raw) {
   const page = raw.page ? clampPage(raw.page) : fallbackPage
   const juz = juzFromPage(page)
   const id = `${surah}:${ayah}`
-  const arabic = typeof raw.arabic === 'string' ? raw.arabic.slice(0, 260) : ''
+  const arabic = typeof raw.arabic === 'string' ? stripAyahEnd(raw.arabic).slice(0, 260) : ''
   const translation = typeof raw.translation === 'string' ? raw.translation.slice(0, 260) : ''
   const createdAt = Number(raw.createdAt) || Date.now()
   return {

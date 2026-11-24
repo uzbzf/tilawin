@@ -1,4 +1,4 @@
-import { stripAyahEnd } from './ayahMark'
+import { normalizeQuranText, stripAyahEnd } from './ayahMark'
 import { getReciter, readReciter } from './reciters'
 
 const surahCache = new Map()
@@ -47,7 +47,7 @@ export async function fetchSurah(surahNumber, translationLang = 'ru') {
 
   const result = {
     number: uthmani?.number || n,
-    name: uthmani?.name || '',
+    name: normalizeQuranText(uthmani?.name || ''),
     englishName: uthmani?.englishName || '',
     englishNameTranslation: uthmani?.englishNameTranslation || '',
     revelationType: uthmani?.revelationType || '',

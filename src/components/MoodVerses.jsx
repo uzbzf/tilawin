@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { pickRandomVerse, searchVerses } from '../data/verses'
 import { useSound } from '../hooks/useSound'
 import { useLocale } from '../i18n/LocaleContext'
+import { stripAyahEnd } from '../lib/ayahMark'
 
 const moods = [
   { id: 'calm', icon: Wind },
@@ -155,7 +156,7 @@ export function MoodVerses({ showSearch = false }) {
                 className="font-quran text-[1.65rem] leading-[2] break-words text-[var(--text)] sm:text-[1.85rem]"
                 dir="rtl"
               >
-                {verse.arabic}
+                {stripAyahEnd(verse.arabic)}
               </p>
               <p className="mt-3 text-sm leading-relaxed break-words text-[var(--muted)]">{verse.text[lang]}</p>
               <p className="mt-2 text-[11px] tracking-wide break-words text-[var(--muted)]">

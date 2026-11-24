@@ -5,6 +5,7 @@ import { useGeolocation } from '../hooks/useGeolocation'
 import { usePrayerTimes } from '../hooks/usePrayerTimes'
 import { useSound } from '../hooks/useSound'
 import { useLocale } from '../i18n/LocaleContext'
+import { stripAyahEnd } from '../lib/ayahMark'
 import { formatClock } from '../lib/prayer'
 
 const VERSES = {
@@ -192,7 +193,7 @@ export function TahajjudCard() {
             transition={{ duration: 0.28 }}
           >
             <p className="font-quran text-[1.35rem] leading-[2] text-[var(--text)]" dir="rtl">
-              {verse.ar}
+              {stripAyahEnd(verse.ar)}
             </p>
             <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">{verse.tr}</p>
           </motion.div>
