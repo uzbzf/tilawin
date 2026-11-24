@@ -61,6 +61,26 @@ export async function clearMushafCache() {
   })
 }
 
+export async function getMushafMeta(key) {
+  const db = await openDb()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(META, 'readonly')
+    const req = tx.objectStore(META).get(String(key))
+    req.onsuccess = () => resolve(req.result ?? null)
+    req.onerror = () => reject(req.error)
+  })
+}
+
+export async function putMushafMeta(key, value) {
+  const db = await openDb()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(META, 'readwrite')
+    tx.objectStore(META).put(value, String(key))
+    tx.oncomplete = () => resolve(true)
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
 export async function fetchAndCachePage(page, urls) {
   const cached = await getCachedPage(page)
   if (cached?.blob) {
