@@ -25,12 +25,18 @@ export function normalizeQuranText(text) {
 
 /**
  * Madani ayah-end mark for Quran2013 (UthmanicHafs1Ver18):
- * In KFGQPC UthmanicHafs, Arabic-Indic digits (U+0660..U+0669) automatically form
- * the complete ornamental ayah-end frame with the number inside via GSUB rlig (Lookup 36).
- * Do NOT prepend U+06DD — U+06DD renders a separate empty ornamental frame next to the numbered one.
+ * In KFGQPC UthmanicHafs (Quran2013.woff2), codepoints U+FC00..U+FD1D (0xFC00 + ayahNumber - 1, for 1..286)
+ * are mapped directly in the font's cmap table to pre-composed composite glyphs (gid 1126..1411)
+ * that render ONE single Madani ayah-end ornamental frame with the ayah number centered inside.
+ * (Using U+06DD + digits instead causes a duplicate empty ornament frame because U+06DD is a standalone
+ * empty frame and single-digit GSUB Lookup 36 rules have compCount=1 which HarfBuzz skips.)
  */
 export function ayahEndMark(number) {
   if (number == null || number === '') return ''
+  const n = Number(number)
+  if (Number.isInteger(n) && n >= 1 && n <= 286) {
+    return String.fromCharCode(0xfc00 + n - 1)
+  }
   return toArabicIndic(number)
 }
 
@@ -52,6 +58,6 @@ export function stripAyahEnd(text) {
 /** Append ayah number for plain-text copy */
 export function withAyahEnd(text, number) {
   const cleaned = stripAyahEnd(text)
-  if (!cleaned) return ayahEndMark(number)
+  if (!cleaned) return `(${toArabicIndic(number)})`
   return `${cleaned} (${toArabicIndic(number)})`
 }

@@ -1,4 +1,4 @@
-const CACHE = 'tilawin-v1'
+const CACHE = 'tilawin-v3'
 const PRECACHE = [
   '/',
   '/index.html',
@@ -9,7 +9,7 @@ const PRECACHE = [
   '/icons/apple-touch-icon.png',
 ]
 
-const SKIP_HOSTS = ['api.aladhan.com', 'api.bigdatacloud.net', 'api.allorigins.win']
+const SKIP_HOSTS = ['api.aladhan.com', 'api.bigdatacloud.net', 'api.allorigins.win', 'api.alquran.cloud']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -51,7 +51,12 @@ self.addEventListener('fetch', (event) => {
 
   if (isSkipped(url)) return
 
-  if (request.mode === 'navigate') {
+  if (
+    request.mode === 'navigate' ||
+    url.pathname.startsWith('/assets/') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css')
+  ) {
     event.respondWith(networkFirst(request))
     return
   }
@@ -65,13 +70,15 @@ async function networkFirst(request) {
     const fresh = await fetch(request)
     if (fresh && fresh.ok) {
       cache.put(request, fresh.clone())
-      cache.put('/index.html', fresh.clone())
+      if (request.mode === 'navigate') {
+        cache.put('/index.html', fresh.clone())
+      }
     }
     return fresh
   } catch {
     return (
       (await cache.match(request)) ||
-      (await cache.match('/index.html')) ||
+      (request.mode === 'navigate' ? await cache.match('/index.html') : null) ||
       Response.error()
     )
   }

@@ -12,7 +12,8 @@ export function mushafFooter(page, lang = 'ru') {
   const juz = juzFromPage(page)
   const hizb = hizbFromPage(page)
   const surah = surahs.find((s) => s.n === surahFromPage(page))
-  const surahName = surah ? (lang === 'ar' ? surah.ar : surah.ru) : ''
+  const surahName = surah ? (lang === 'ar' ? surah.ar : lang === 'en' ? surah.tr : surah.ru) : ''
+  const surahAr = surah ? `سُورَةُ ${surah.ar}` : ''
   return {
     page,
     pageAr: toArabicIndic(page),
@@ -21,6 +22,7 @@ export function mushafFooter(page, lang = 'ru') {
     hizb,
     hizbAr: toArabicIndic(hizb),
     surahName,
-    lineAr: `${surahName}  ·  الجزء ${toArabicIndic(juz)}  ·  الحزب ${toArabicIndic(hizb)}  ·  ${toArabicIndic(page)}`,
+    surahAr,
+    lineAr: `${surahAr}  ·  الجزء ${juz}  ·  الحزب ${hizb}  ·  ص ${page}`,
   }
 }

@@ -65,22 +65,28 @@ const MODES = [
 ]
 
 /**
- * RTL page transition variants:
- * dir < 0 => next page in Arabic Mushaf (moving left: new page enters from left, old exits right)
- * dir > 0 => previous page in Arabic Mushaf (moving right: new page enters from right, old exits left)
+ * RTL Arabic Mushaf book page-turn variants:
+ * The book spine is on the right (`transformOrigin: 'right center'`).
+ * - dir < 0 => next page (`page + 1`, swipe left / right-to-left):
+ *   current page flips/slides leftward (`x: 0 -> -56`), next page opens from right to left (`x: 56 -> 0`).
+ * - dir > 0 => previous page (`page - 1`, swipe right / left-to-right):
+ *   current page slides rightward (`x: 0 -> 56`), previous page returns from left to right (`x: -56 -> 0`).
  */
 const MUSHAF_PAGE_VARIANTS = {
   enter: (dir) => ({
     opacity: 0,
-    x: dir < 0 ? -42 : 42,
+    x: dir < 0 ? 56 : -56,
+    rotateY: dir < 0 ? -7 : 7,
   }),
   center: {
     opacity: 1,
     x: 0,
+    rotateY: 0,
   },
   exit: (dir) => ({
     opacity: 0,
-    x: dir < 0 ? 42 : -42,
+    x: dir < 0 ? -56 : 56,
+    rotateY: dir < 0 ? 7 : -7,
   }),
 }
 
@@ -96,7 +102,6 @@ function lockAppBackground(locked) {
   if (locked) {
     root.dataset.mushafOpen = '1'
     document.body.style.overflow = 'hidden'
-    document.body.style.touchAction = 'none'
   } else {
     delete root.dataset.mushafOpen
     document.body.style.overflow = ''
@@ -546,19 +551,34 @@ export function QuranReader() {
    * RTL Mushaf swipe/drag gesture handling:
    * - Swipe left (deltaX < 0, moving finger right -> left) => Next page (pageNo + 1)
    * - Swipe right (deltaX > 0, moving finger left -> right) => Previous page (pageNo - 1)
+   * Tracks start and latest move coordinates so touchcancel in mobile WebViews still completes the swipe.
    */
   const handleGestureStart = (clientX, clientY) => {
     if (clientX == null) return
-    gestureStartRef.current = { x: clientX, y: clientY ?? 0 }
+    gestureStartRef.current = {
+      startX: clientX,
+      startY: clientY ?? 0,
+      lastX: clientX,
+      lastY: clientY ?? 0,
+    }
+  }
+
+  const handleGestureMove = (clientX, clientY) => {
+    if (!gestureStartRef.current || clientX == null) return
+    gestureStartRef.current.lastX = clientX
+    if (clientY != null) gestureStartRef.current.lastY = clientY
   }
 
   const handleGestureEnd = (clientX, clientY) => {
-    if (!gestureStartRef.current || clientX == null) return
-    const deltaX = clientX - gestureStartRef.current.x
-    const deltaY = (clientY ?? 0) - gestureStartRef.current.y
+    if (!gestureStartRef.current) return
+    const endX = clientX ?? gestureStartRef.current.lastX
+    const endY = clientY ?? gestureStartRef.current.lastY
+    const deltaX = endX - gestureStartRef.current.startX
+    const deltaY = endY - gestureStartRef.current.startY
     gestureStartRef.current = null
-    if (Math.abs(deltaX) < 42) return
+    if (Math.abs(deltaX) < 36) return
     if (Math.abs(deltaY) > Math.abs(deltaX) * 1.15) return
+    // RTL Arabic Mushaf: swipe left (deltaX < 0) -> next page (pageNo + 1); swipe right (deltaX > 0) -> previous page (pageNo - 1)
     if (deltaX < 0) {
       if (pageNo < 604) goPage(pageNo + 1)
     } else if (pageNo > 1) {
@@ -567,8 +587,13 @@ export function QuranReader() {
   }
 
   const onTouchStart = (event) => {
-    const touch = event.changedTouches?.[0]
+    const touch = event.touches?.[0] || event.changedTouches?.[0]
     handleGestureStart(touch?.clientX, touch?.clientY)
+  }
+
+  const onTouchMove = (event) => {
+    const touch = event.touches?.[0] || event.changedTouches?.[0]
+    handleGestureMove(touch?.clientX, touch?.clientY)
   }
 
   const onTouchEnd = (event) => {
@@ -580,6 +605,12 @@ export function QuranReader() {
     if (event.pointerType === 'touch') return
     if (event.button !== 0) return
     handleGestureStart(event.clientX, event.clientY)
+  }
+
+  const onPointerMove = (event) => {
+    if (event.pointerType === 'touch') return
+    if (!gestureStartRef.current) return
+    handleGestureMove(event.clientX, event.clientY)
   }
 
   const onPointerUp = (event) => {
@@ -624,7 +655,7 @@ export function QuranReader() {
         }`}
       >
         {!mushafFullscreen && (
-          <div className="glass-strong mb-2 flex flex-wrap items-center gap-1.5 rounded-2xl p-2">
+          <div dir="rtl" className="glass-strong mb-2 flex flex-wrap items-center gap-1.5 rounded-2xl p-2">
             <button
               type="button"
               onClick={closeMushaf}
@@ -633,7 +664,30 @@ export function QuranReader() {
               <X size={14} />
               {t('quran.back')}
             </button>
+            <select
+              value={surahFromPage(pageNo)}
+              onChange={(event) => goPage(SURAH_START_PAGE[Number(event.target.value) - 1] || 1)}
+              className="max-w-[7.75rem] truncate rounded-full bg-white/10 px-2 py-1.5 text-[11px] text-[var(--text)]"
+            >
+              {surahs.map((s) => (
+                <option key={s.n} value={s.n}>
+                  {s.n}. {titleForSurah(s, lang)}
+                </option>
+              ))}
+            </select>
+            <select
+              value={juzFromPage(pageNo)}
+              onChange={(event) => goPage(JUZ_START_PAGE[Number(event.target.value) - 1] || 1)}
+              className="rounded-full bg-white/10 px-2 py-1.5 text-[11px] text-[var(--text)]"
+            >
+              {JUZ_START_PAGE.map((_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {t('quran.juz')} {i + 1}
+                </option>
+              ))}
+            </select>
             <form
+              dir="ltr"
               className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-1"
               onSubmit={(event) => {
                 event.preventDefault()
@@ -649,28 +703,6 @@ export function QuranReader() {
               />
               <span className="text-[10px] text-[var(--muted)]">/604</span>
             </form>
-            <select
-              value={juzFromPage(pageNo)}
-              onChange={(event) => goPage(JUZ_START_PAGE[Number(event.target.value) - 1] || 1)}
-              className="rounded-full bg-white/10 px-2 py-1.5 text-[11px] text-[var(--text)]"
-            >
-              {JUZ_START_PAGE.map((_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {t('quran.juz')} {i + 1}
-                </option>
-              ))}
-            </select>
-            <select
-              value={surahFromPage(pageNo)}
-              onChange={(event) => goPage(SURAH_START_PAGE[Number(event.target.value) - 1] || 1)}
-              className="max-w-[7.75rem] truncate rounded-full bg-white/10 px-2 py-1.5 text-[11px] text-[var(--text)]"
-            >
-              {surahs.map((s) => (
-                <option key={s.n} value={s.n}>
-                  {s.n}. {titleForSurah(s, lang)}
-                </option>
-              ))}
-            </select>
             <button
               type="button"
               onClick={openMushafBookmarksSheet}
@@ -709,7 +741,7 @@ export function QuranReader() {
                 click()
                 setMushafFullscreen(true)
               }}
-              className="ml-auto inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1.5 text-xs text-[var(--text)]"
+              className="mr-auto inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1.5 text-xs text-[var(--text)]"
               aria-label={t('quran.fullscreen')}
             >
               <Maximize2 size={12} />
@@ -719,13 +751,20 @@ export function QuranReader() {
 
         <div
           dir="rtl"
+          style={{ touchAction: 'pan-y', perspective: '1200px' }}
           className={`relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#f3ead6] select-none ${
-            mushafFullscreen ? 'rounded-none' : 'rounded-3xl shadow-[0_0_0_1px_rgba(0,0,0,0.2)]'
+            mushafFullscreen
+              ? 'rounded-none'
+              : 'rounded-3xl border-r-[6px] border-r-[#c4ad82] shadow-[-6px_0_18px_rgba(0,0,0,0.28),inset_-8px_0_14px_rgba(138,109,59,0.18),0_0_0_1px_rgba(0,0,0,0.2)]'
           }`}
           onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchEnd}
           onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
         >
           {mushafFullscreen && (
             <div
@@ -818,6 +857,7 @@ export function QuranReader() {
               animate="center"
               exit="exit"
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              style={{ transformOrigin: 'right center' }}
               className="flex min-h-0 flex-1 flex-col"
             >
               <div
@@ -917,46 +957,70 @@ export function QuranReader() {
             Physical LEFT = Next Page (pageNo + 1, moving left in Arabic Mushaf)
             Physical RIGHT = Previous Page (pageNo - 1, moving right in Arabic Mushaf) */}
         {!mushafFullscreen && (
-          <div dir="ltr" className="mt-2 flex items-center justify-between gap-2 pb-1">
-            <button
-              type="button"
-              disabled={loading || pageNo >= 604}
-              onClick={() => goPage(pageNo + 1)}
-              className="glass-strong inline-flex h-11 items-center gap-1.5 rounded-full px-3.5 text-xs font-medium text-[var(--text)] disabled:opacity-40"
-              aria-label={t('quran.nextPage')}
-            >
-              <ChevronLeft size={18} />
-              <span>{t('quran.nextPage')}</span>
-            </button>
-
-            <div className="min-w-0 flex-1 px-1 text-center">
-              <p className="truncate text-xs text-[var(--muted)]">
-                {footer.surahName}
-                <span className="mt-0.5 block tabular-nums">{pageNo} / 604</span>
-              </p>
-              {/* RTL progress bar: fills from right (page 1) to left (page 604) */}
-              <div
-                dir="rtl"
-                className="mx-auto mt-1 h-1 w-28 overflow-hidden rounded-full bg-white/10"
-                aria-hidden
-              >
-                <div
-                  className="h-full rounded-full bg-gold transition-all duration-300"
-                  style={{ width: `${Math.min(100, Math.max(1, (pageNo / 604) * 100))}%` }}
-                />
-              </div>
+          <div className="mt-2 space-y-1.5 pb-1">
+            {/* RTL Page strip inside Mushaf: ordered from RIGHT (start) to LEFT */}
+            <div dir="rtl" className="flex items-center gap-1 overflow-x-auto px-1">
+              {Array.from({ length: 7 }, (_, idx) => {
+                const start = Math.max(1, Math.min(598, pageNo - 3))
+                return start + idx
+              }).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => goPage(p)}
+                  className={`min-w-[2.1rem] flex-1 rounded-full py-1 text-[11px] tabular-nums transition ${
+                    p === pageNo
+                      ? 'bg-gold/30 font-semibold text-gold ring-1 ring-gold/40'
+                      : 'bg-white/10 text-[var(--muted)] hover:text-[var(--text)]'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
             </div>
 
-            <button
-              type="button"
-              disabled={loading || pageNo <= 1}
-              onClick={() => goPage(pageNo - 1)}
-              className="glass-strong inline-flex h-11 items-center gap-1.5 rounded-full px-3.5 text-xs font-medium text-[var(--text)] disabled:opacity-40"
-              aria-label={t('quran.prevPage')}
-            >
-              <span>{t('quran.prevPage')}</span>
-              <ChevronRight size={18} />
-            </button>
+            <div dir="ltr" className="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                disabled={loading || pageNo >= 604}
+                onClick={() => goPage(pageNo + 1)}
+                className="glass-strong inline-flex h-11 items-center gap-1.5 rounded-full px-3.5 text-xs font-medium text-[var(--text)] disabled:opacity-40"
+                aria-label={t('quran.nextPage')}
+              >
+                <ChevronLeft size={18} />
+                <span>{t('quran.nextPage')}</span>
+              </button>
+
+              <div className="min-w-0 flex-1 px-1 text-center">
+                <p className="truncate text-xs text-[var(--muted)]">
+                  {footer.surahName}
+                  <span className="mt-0.5 block tabular-nums">{pageNo} / 604</span>
+                </p>
+                {/* RTL progress bar: fills from right (page 1) to left (page 604) */}
+                <div
+                  dir="rtl"
+                  className="mx-auto mt-1 h-1 w-28 overflow-hidden rounded-full bg-white/10"
+                  aria-hidden
+                >
+                  <div
+                    className="h-full rounded-full bg-gold transition-all duration-300"
+                    style={{ width: `${Math.min(100, Math.max(1, (pageNo / 604) * 100))}%` }}
+                  />
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={loading || pageNo <= 1}
+                onClick={() => goPage(pageNo - 1)}
+                className="glass-strong inline-flex h-11 items-center gap-1.5 rounded-full px-3.5 text-xs font-medium text-[var(--text)] disabled:opacity-40"
+                aria-label={t('quran.prevPage')}
+              >
+                <span>{t('quran.prevPage')}</span>
+                <ChevronRight size={18} />
+              </button>
+            </div>
           </div>
         )}
         {error && <p className="pb-2 text-center text-xs text-rose-400">{error}</p>}
@@ -1194,8 +1258,43 @@ export function QuranReader() {
                 {t('quran.openInMushaf')}
               </button>
             </div>
+            {/* RTL Page strip: pages ordered from RIGHT to LEFT like an Arabic Mushaf */}
+            <div
+              dir="rtl"
+              className="mb-2.5 flex items-center gap-1 overflow-x-auto rounded-2xl border border-[var(--glass-border)] bg-white/5 p-1.5"
+            >
+              {Array.from({ length: 9 }, (_, idx) => {
+                const start = Math.max(1, Math.min(596, pageNo - 4))
+                return start + idx
+              }).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => goPage(p)}
+                  className={`min-w-[2.25rem] flex-1 rounded-xl px-2 py-1 text-[11px] tabular-nums transition ${
+                    p === pageNo
+                      ? 'bg-gold/30 font-semibold text-gold'
+                      : 'bg-white/5 text-[var(--muted)] hover:text-[var(--text)]'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
             {loading && <p className="py-8 text-center text-sm text-[var(--muted)]">{t('quran.loading')}</p>}
-            <div className="max-h-[28rem] space-y-3 overflow-y-auto">
+            <div
+              dir="rtl"
+              style={{ touchAction: 'pan-y' }}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              onTouchCancel={onTouchEnd}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
+              className="max-h-[28rem] space-y-3 overflow-y-auto rounded-2xl border-r-4 border-r-gold/35 pr-2"
+            >
               {pageAyahs.map((ayah) => {
                 const bmKey = `${ayah.surah}:${ayah.number}`
                 const isBm = bookmarkedMap.has(bmKey)

@@ -1,4 +1,4 @@
-const CACHE = 'tilawin-v1'
+const CACHE = 'tilawin-v3'
 
 export function registerServiceWorker() {
   if (!import.meta.env.PROD) return
@@ -7,7 +7,10 @@ export function registerServiceWorker() {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
-      .then(() => cacheShell())
+      .then((reg) => {
+        reg.update().catch(() => {})
+        return cacheShell()
+      })
       .catch(() => {})
   })
 }
